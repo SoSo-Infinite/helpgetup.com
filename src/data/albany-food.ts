@@ -16,6 +16,7 @@ export type FoodKind = "pantry" | "meal" | "produce" | "fridge";
 
 export type SlotRule = {
   /** 0 Sunday … 6 Saturday */
+  weekdays: number[];
   /** 24-hour HH:MM */
   start: string;
   /** null when the source did not publish an end time */
