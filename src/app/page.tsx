@@ -1,4 +1,5 @@
 import Image from "next/image";
+import FoodWalk from "@/components/FoodWalk";
 import WaitlistForm from "@/components/WaitlistForm";
 
 export default function Home() {
@@ -22,8 +23,8 @@ export default function Home() {
               <span className="brand-tag">Take the next step.</span>
             </span>
           </a>
-          <a className="header-cta" href="#waitlist">
-            Join waitlist
+          <a className="header-cta" href="#walk">
+            Start with food
           </a>
         </div>
       </header>
@@ -39,21 +40,25 @@ export default function Home() {
               height={560}
               priority
             />
-            <h1>Stuck on a problem? Start with one clear next step.</h1>
-            <p className="lede">
-              HelpGetUp is an early-access assistant for everyday friction —
-              unpaid bills, food and benefits paperwork, getting to an
-              appointment. You name the goal. It proposes a concrete next
-              action. You decide whether to take it.
+            <FoodWalk />
+          </div>
+        </section>
+
+        <section className="section" id="gap">
+          <div className="wrap narrow">
+            <h2>Why this page is here</h2>
+            <p className="sub">
+              America.gov and other government sites cover SNAP and the official
+              answers. This demo is the last mile they do not: local pantries,
+              soup kitchens, community meals, and church food help in Albany
+              County, as a readable list for this week. Every stop names its
+              source.
             </p>
-            <div className="btn-row">
-              <a className="btn btn-primary" href="#waitlist">
-                Join the waitlist
-              </a>
-              <a className="btn btn-ghost" href="#how">
-                See how it works
-              </a>
-            </div>
+            <p className="sub">
+              Albany County only. Food only. HelpGetUp does not call, email,
+              fax, or send a letter. It does not fill out a government form
+              for you.
+            </p>
           </div>
         </section>
 
