@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "HelpGetUp — Take the next step.",
   description:
-    "HelpGetUp is an early-access outcome-resolution assistant. Name a goal, get a concrete next step, and decide whether to take it. Join the waitlist.",
+    "Stuck on food in Albany County? Start with one clear next step — a sourced pantry or meal this week, or the official SNAP path. You decide whether to take it.",
   metadataBase: new URL("https://helpgetup.com"),
   openGraph: {
     title: "HelpGetUp — Take the next step.",

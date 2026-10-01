@@ -17,6 +17,10 @@ npm install
 npm run dev
 ```
 
+## Albany County food demo
+
+The homepage walk is food-only and Albany County only. Stops live in `src/data/albany-food.ts`. Hours are copied from the [Food Connect map](https://map.thefoodpantries.org/) (checked 2026-09-30), including the Albany County pantries and community meals on that map, and from the February 2026 Albany resource flyer for Unity on the Move at A Child’s Place. SNAP links go to America.gov, NYS myBenefits, and the Albany County hotline. The demo does not collect IDs or place calls.
+
 ## Deploy
 
 Vercel project `helpgetup-com`, domain `helpgetup.com` / `www.helpgetup.com`.
