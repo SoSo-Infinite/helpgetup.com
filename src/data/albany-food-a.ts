@@ -364,7 +364,7 @@ export const FOOD_PLACES_A: FoodPlace[] = [
       zip: "12206",
       phone: "518-314-0859 ext. 161",
       hoursRaw: "GRAB and GO; Monday and Thursday 11:45 am-12:45pm",
-      note: "Address is spelled \u201cLivington\u201d on the Food Connect map. Grab-and-go.",
+      note: "Address is spelled “Livington” on the Food Connect map. Grab-and-go.",
       sourceName: MAP,
       sourceUrl: MAP_URL,
       sourceUpdated: "2026-04-23",
