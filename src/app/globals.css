@@ -700,3 +700,34 @@ img {
 #examples {
   scroll-margin-top: 84px;
 }
+
+/* Source freshness 2026-10-09: list stamp + older-listing flag */
+.checked-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.9rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: #e7f5ee;
+  color: var(--ok);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stale-flag {
+  margin: 0.45rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  background: #fff4e5;
+  border: 1px solid #f5c58a;
+  color: #7a4100;
+  font-size: 0.86rem;
+}
+
+@media (prefers-contrast: more) {
+  .checked-stamp,
+  .stale-flag {
+    border: 2px solid currentColor;
+  }
+}

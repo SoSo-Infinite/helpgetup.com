@@ -1,10 +1,12 @@
 "use client";
 
 import { FormEvent, useMemo, useState, type ReactNode } from "react";
-import { OFFICIAL, type FoodPlace } from "@/data/albany-food";
+import { LIST_CHECKED_ON, OFFICIAL, type FoodPlace } from "@/data/albany-food";
 import {
+  formatIsoDate,
   formatPhone,
   formatWhen,
+  isStaleSource,
   icsFileName,
   icsHref,
   mapsHref,
@@ -393,6 +395,12 @@ function Options({
         <a href={OFFICIAL.referral.phoneHref}>{OFFICIAL.referral.phone}</a> (Food
         Pantries referral line). We do not call.
       </p>
+      {LIST_CHECKED_ON ? (
+        <p className="checked-stamp">
+          <span aria-hidden="true">✓</span> List last checked against its sources on{" "}
+          <time dateTime={LIST_CHECKED_ON}>{formatIsoDate(LIST_CHECKED_ON)}</time>.
+        </p>
+      ) : null}
       {result.places.length === 0 ? (
         <p className="walk-help">
           Nothing in this file has a published time left this week for that spot. Use the{" "}
@@ -410,7 +418,9 @@ function Options({
                 <p className="when">
                   {match.opening
                     ? formatWhen(match.opening)
-                    : "Hours not published"}
+                    : match.place.alwaysOpen
+                      ? "Open 24/7, per the source"
+                      : "Hours not published"}
                   {match.opening?.nextWeek ? " · next opening is next week" : ""}
                 </p>
                 <p>
@@ -431,13 +441,7 @@ function Options({
                 ) : (
                   <p className="hours-raw">Published hours: not listed. Don’t assume it is open.</p>
                 )}
-                <p className="source-line">
-                  Source:{" "}
-                  <a href={match.place.sourceUrl} target="_blank" rel="noopener noreferrer">
-                    {match.place.sourceName}
-                  </a>
-                  . Updated {match.place.sourceUpdated}.
-                </p>
+                <SourceLine place={match.place} />
                 <button className="btn btn-primary" type="button" onClick={() => onPick(match)}>
                   Use this stop
                 </button>
@@ -476,7 +480,11 @@ function FoodScript({
   onBack: () => void;
 }) {
   const place: FoodPlace = match.place;
-  const when = match.opening ? formatWhen(match.opening) : "hours not published";
+  const when = match.opening
+    ? formatWhen(match.opening)
+    : place.alwaysOpen
+      ? "open 24/7"
+      : "hours not published";
   const kindWord = place.kind === "meal" ? "the community meal" : "food";
 
   return (
@@ -517,12 +525,8 @@ function FoodScript({
         Maps and the calendar file use only this stop’s published address and hours.
         Nothing about you is added or sent.
       </p>
+      <SourceLine place={place} />
       <p className="source-line">
-        Source:{" "}
-        <a href={place.sourceUrl} target="_blank" rel="noopener noreferrer">
-          {place.sourceName}
-        </a>
-        . Updated {place.sourceUpdated}.{" "}
         <a href={phoneHref(place.phone)}>{formatPhone(place.phone)}</a>
         {" · "}
         {place.address}, {place.city} {place.zip}
@@ -603,5 +607,36 @@ function CheckBack({
         {next.label}
       </button>
     </div>
+  );
+}
+
+function SourceLine({ place }: { place: FoodPlace }) {
+  const stale = isStaleSource(place);
+  return (
+    <>
+      {stale ? (
+        <p className="stale-flag">
+          Older listing: the source last updated this stop on{" "}
+          {formatIsoDate(place.sourceUpdated)}. Call before you go.
+        </p>
+      ) : null}
+      <p className="source-line">
+        Source:{" "}
+        <a href={place.sourceUrl} target="_blank" rel="noopener noreferrer">
+          {place.sourceName}
+        </a>
+        . Source updated{" "}
+        <time dateTime={place.sourceUpdated}>{formatIsoDate(place.sourceUpdated)}</time>.
+        {place.verifiedOn ? (
+          <>
+            {" "}
+            Last verified by HelpGetUp{" "}
+            <time dateTime={place.verifiedOn}>{formatIsoDate(place.verifiedOn)}</time>.
+          </>
+        ) : (
+          " Not yet re-checked by HelpGetUp."
+        )}
+      </p>
+    </>
   );
 }

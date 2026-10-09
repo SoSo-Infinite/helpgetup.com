@@ -468,3 +468,21 @@ export function icsHref(place: FoodPlace, opening: Opening): string {
 export function icsFileName(place: FoodPlace): string {
   return `helpgetup-${place.id}.ics`;
 }
+
+/** "2026-10-09" → "Oct 9, 2026". Date-only, no time zone shift. */
+export function formatIsoDate(iso: string | undefined): string {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[m - 1]} ${d}, ${y}`;
+}
+
+/** True when the source row itself is older than `months` (default 12) at `now`. */
+export function isStaleSource(place: FoodPlace, now: Date = new Date(), months = 12): boolean {
+  const [y, m, d] = place.sourceUpdated.split("-").map(Number);
+  if (!y || !m) return false;
+  const cutoff = new Date(now.getTime());
+  cutoff.setMonth(cutoff.getMonth() - months);
+  return new Date(Date.UTC(y, m - 1, d || 1, 12)) < cutoff;
+}
