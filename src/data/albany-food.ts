@@ -69,11 +69,18 @@ export const FOOD_PLACES: FoodPlace[] = [
   ...FOOD_PLACES_C,
 ].map((place) => ({ ...place, verifiedOn: VERIFIED[place.id]?.on }));
 
-/** Newest date any row was checked against its source. Shown as the list's "last checked" stamp. */
-export const LIST_CHECKED_ON: string = FOOD_PLACES.reduce(
-  (latest, p) => (p.verifiedOn && p.verifiedOn > latest ? p.verifiedOn : latest),
-  "",
-);
+/**
+ * Oldest per-row check date, shown as the list's "last checked" stamp. Using the oldest keeps the
+ * stamp honest: `verify-food-sources --write` only re-dates rows that still match, so a drifted or
+ * never-checked row holds the whole list's stamp back instead of hiding behind today's date.
+ * Empty when any row has never been checked.
+ */
+export const LIST_CHECKED_ON: string = FOOD_PLACES.some((p) => !p.verifiedOn)
+  ? ""
+  : FOOD_PLACES.reduce(
+      (oldest, p) => (!oldest || (p.verifiedOn as string) < oldest ? (p.verifiedOn as string) : oldest),
+      "",
+    );
 
 /** A source row this old (months) gets a "call before you go" flag. */
 export const STALE_AFTER_MONTHS = 12;
