@@ -454,6 +454,12 @@ function Options({
                 ) : (
                   <p className="hours-raw">{t.hoursNotListed}</p>
                 )}
+                {match.place.note ? (
+                  // Eligibility and "call first" notes (residents only, students only, appointment) belong on the card, before someone picks it.
+                  <p className="walk-help fine">
+                    {t.fromSource} <span lang="en">{match.place.note}</span>
+                  </p>
+                ) : null}
                 <SourceLine place={match.place} />
                 <button className="btn btn-primary" type="button" onClick={() => onPick(match)}>
                   {t.useStop}

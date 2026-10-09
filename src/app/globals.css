@@ -1,5 +1,5 @@
 :root {
-  --blue: #2f6bff;
+  --blue: #285fe8; /* was #2f6bff: 4.49:1 on white, just under WCAG AA 4.5:1 */
   --blue-dark: #1e4fd6;
   --blue-soft: #e8efff;
   --navy: #0b1f3a;
@@ -804,4 +804,15 @@ img {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+}
+
+/* WCAG 1.4.1: links inside running text are underlined, not told apart by color alone. */
+.walk-help a,
+.source-line a,
+.official-list p a,
+.say a,
+.form-note a,
+.fineprint a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
