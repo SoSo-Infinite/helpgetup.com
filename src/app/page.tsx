@@ -1,13 +1,26 @@
 import Image from "next/image";
+import Link from "next/link";
 import FoodWalk from "@/components/FoodWalk";
 import WaitlistForm from "@/components/WaitlistForm";
+import { HeaderStart, SkipLink } from "@/components/WalkChrome";
+import { FOOD_PLACES, LIST_CHECKED_ON } from "@/data/albany-food";
+import { SENIOR_MEAL_SITES } from "@/data/albany-senior-meals";
+import { formatIsoDate } from "@/lib/food-week";
+
+/** Counts come straight from the data files, so they can't drift from what the walk shows. */
+const count = (kind: string) => FOOD_PLACES.filter((p) => p.kind === kind).length;
+const ON_LIST = [
+  { n: count("pantry"), label: "food pantries", detail: "Groceries to take home. Each listing shows its rules, like once a month or call first." },
+  { n: count("meal"), label: "community meals", detail: "A hot meal, sit-down or take-out. Each listing says who it serves." },
+  { n: count("produce"), label: "produce stops", detail: "Fresh fruit and vegetables, including Capital Roots’ Veggie Mobile (a low-cost market that takes SNAP/EBT, not free)." },
+  { n: count("fridge"), label: "community fridges", detail: "Free food you can take. Some are listed as open 24/7; check each one." },
+  { n: SENIOR_MEAL_SITES.length, label: "meal sites for people 60+", detail: "County senior meal sites. In the walk they show only if you check “I’m 60 or older.”" },
+];
 
 export default function Home() {
   return (
     <>
-      <a className="skip-link" href="#walk">
-        Skip to the food walk
-      </a>
+      <SkipLink />
       <header className="site-header">
         <div className="wrap header-inner">
           <a className="brand-lockup" href="#top" aria-label="HelpGetUp home">
@@ -26,22 +39,22 @@ export default function Home() {
               <span className="brand-tag">Take the next step.</span>
             </span>
           </a>
-          <a className="header-cta" href="#walk">
-            Start with food
-          </a>
+          <HeaderStart />
         </div>
       </header>
 
       <main id="top">
         <section className="hero">
           <div className="wrap">
+            {/* Big logo on wide screens only. On a phone the header already shows the brand,
+                and the question + button need to sit above the fold. Lazy, so phones skip the download. */}
             <Image
               className="hero-logo"
               src="/helpgetup-logo.png"
               alt="HelpGetUp — Take the next step."
               width={560}
               height={560}
-              priority
+              sizes="220px"
             />
             <FoodWalk />
           </div>
@@ -49,18 +62,17 @@ export default function Home() {
 
         <section className="section" id="gap">
           <div className="wrap narrow">
-            <h2>Why this page is here</h2>
+            <h2>What this is</h2>
             <p className="sub">
-              America.gov and other government sites cover SNAP and the official
-              answers. This demo is the last mile they do not: local pantries,
-              soup kitchens, community meals, and church food help in Albany
-              County, as a readable list for this week. Every stop names its
-              source.
+              Government sites explain SNAP. They don’t tell you which pantry near
+              you is open on Thursday. HelpGetUp does that one job for Albany
+              County: pantries, community meals, and produce stops with their published
+              hours for this week, closest first.
             </p>
             <p className="sub">
-              Albany County only. Food only. HelpGetUp does not call, email,
-              fax, or send a letter. It does not fill out a government form
-              for you.
+              Every stop shows where the information came from and when we last
+              checked it. HelpGetUp doesn’t call anyone, sign you up, or fill out a
+              form. You decide what to do.
             </p>
           </div>
         </section>
@@ -68,83 +80,65 @@ export default function Home() {
         <section className="section alt" id="how">
           <div className="wrap">
             <h2>How it works</h2>
-            <p className="sub">
-              Three moves. No jargon. Built for real situations where the hard
-              part is knowing what to do first.
-            </p>
-            <div className="steps">
-              <article className="card">
-                <div className="step-num">1</div>
-                <h3>Name the goal</h3>
+            <p className="sub">Three steps. No account, no forms.</p>
+            <ol className="steps">
+              <li className="card">
+                <div className="step-num" aria-hidden="true">1</div>
+                <h3>Pick what you need</h3>
+                <p>Food tonight, help with SNAP / EBT, or both.</p>
+              </li>
+              <li className="card">
+                <div className="step-num" aria-hidden="true">2</div>
+                <h3>Type your ZIP or neighborhood</h3>
                 <p>
-                  Tell HelpGetUp what you need to get done — keep the lights on,
-                  renew benefits, find a ride to a clinic.
+                  See stops open this week, closest first, with hours, phone, and
+                  any rules like “residents only” or “call first.”
                 </p>
-              </article>
-              <article className="card">
-                <div className="step-num">2</div>
-                <h3>Get the next step</h3>
+              </li>
+              <li className="card">
+                <div className="step-num" aria-hidden="true">3</div>
+                <h3>Call, then go</h3>
                 <p>
-                  You get one specific action you can take now — who to call,
-                  what to bring, which form to start — not a wall of links.
+                  Tap to call, open it in Maps, or add it to your calendar. Hours
+                  change, so a quick call saves a wasted trip.
                 </p>
-              </article>
-              <article className="card">
-                <div className="step-num">3</div>
-                <h3>You stay in control</h3>
-                <p>
-                  Nothing happens without your say-so. Later, HelpGetUp may help
-                  carry out steps you approve, within clear limits. Today it is
-                  guidance first.
-                </p>
-              </article>
-            </div>
+              </li>
+            </ol>
           </div>
         </section>
 
-        <section className="section" id="examples">
+        <section className="section" id="list">
           <div className="wrap">
-            <h2>Situations it is built for</h2>
+            <h2>What’s on the list</h2>
             <p className="sub">
-              Illustrative — not live case studies, and not a claim that every
-              agency connection works yet.
+              {FOOD_PLACES.length + SENIOR_MEAL_SITES.length} places in Albany
+              County, copied from the Food Pantries for the Capital District’s Food
+              Connect map, Capital Roots, and the Albany County Department for Aging
+              {LIST_CHECKED_ON ? <>. Last checked {formatIsoDate(LIST_CHECKED_ON)}.</> : "."}
             </p>
-            <div className="examples">
-              <article className="example">
-                <h3>Utility bill pressure</h3>
-                <p>
-                  Past-due notice on the kitchen table. Next step might be:
-                  call the utility with your account number and ask about
-                  payment arrangements before the shutoff date.
-                </p>
-              </article>
-              <article className="example">
-                <h3>Food and benefits</h3>
-                <p>
-                  SNAP or similar paperwork that keeps stalling. Next step
-                  might be: gather ID and last month&apos;s income proof, then
-                  start the renewal on the state portal.
-                </p>
-              </article>
-              <article className="example">
-                <h3>Getting somewhere</h3>
-                <p>
-                  Appointment tomorrow, no car. Next step might be: check the
-                  clinic&apos;s ride options, then confirm a pickup time that
-                  leaves a buffer.
-                </p>
-              </article>
-            </div>
+            <ul className="examples">
+              {ON_LIST.map((row) => (
+                <li className="example" key={row.label}>
+                  <h3>
+                    {row.n} {row.label}
+                  </h3>
+                  <p>{row.detail}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="list-link">
+              <Link href="/albany-food-list">See the full list on one page</Link>{" "}
+              (easy to print or share).
+            </p>
           </div>
         </section>
 
         <section className="section alt waitlist" id="waitlist">
           <div className="wrap">
-            <h2>Early access waitlist</h2>
+            <h2>Get a note when there’s more</h2>
             <p className="sub" style={{ marginInline: "auto" }}>
-              HelpGetUp is in early build. Join if you want a note when a first
-              version is ready to try. Honest about the stage — no fake
-              metrics, no pretend partnerships.
+              Food is the first piece. HelpGetUp is still being built. Leave your
+              email and you’ll get a note when the next part is ready. Nothing else.
             </p>
             <div className="panel">
               <WaitlistForm />
@@ -152,7 +146,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-
       <footer className="site-footer">
         <div className="wrap footer-grid">
           <div>
@@ -164,7 +157,8 @@ export default function Home() {
           <p className="fineprint">
             Early access / waitlist only. HelpGetUp is not a substitute for
             emergency services. If you are in immediate danger, call 911 (or
-            your local emergency number). Contact:{" "}
+            your local emergency number).{" "}
+            <Link href="/albany-food-list">Full food list</Link>. Contact:{" "}
             <a href="mailto:cjames112@gmail.com">cjames112@gmail.com</a>
           </p>
           <p className="fineprint">

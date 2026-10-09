@@ -2,10 +2,6 @@ import type { FoodPlace } from "./albany-food";
 
 const MAP = "Food Connect map — The Food Pantries for the Capital District";
 const MAP_URL = "https://map.thefoodpantries.org/";
-const FLYER =
-  "The Food Pantries for the Capital District — Albany County resource flyer, February 2026";
-const FLYER_URL =
-  "https://thefoodpantries.org/wp-content/uploads/2026/02/February-2026-Albany-Resource-Flyer-1.pdf";
 
 export const FOOD_PLACES_B: FoodPlace[] = [
   {

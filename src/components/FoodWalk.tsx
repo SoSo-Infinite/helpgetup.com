@@ -4,7 +4,9 @@ import {
   FormEvent,
   createContext,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
@@ -26,6 +28,7 @@ import {
 import { WALK_TEXT, type WalkText } from "@/lib/walk-text";
 import { SENIOR_COUNTY_URL, SENIOR_PROGRAM, type SeniorMealSite } from "@/data/albany-senior-meals";
 import { matchSeniorMeals } from "@/lib/senior-meals";
+import { START_EVENT, publishWalkLang } from "@/lib/walk-lang";
 
 type Need = "tonight" | "snap" | "both";
 type SnapKind = "apply" | "renew" | "unsure";
@@ -71,6 +74,41 @@ export default function FoodWalk() {
   // 60+ meal sites show only when the person says so (checkbox) or taps to see them. Not stored.
   const [senior, setSenior] = useState(false);
   const t: WalkText = WALK_TEXT[lang];
+  const walkRef = useRef<HTMLDivElement>(null);
+  const movedByUser = useRef(false);
+
+  // Skip link, header button and offline banner follow the walk's language.
+  useEffect(() => publishWalkLang(lang), [lang]);
+
+  // The header "Start with food" button opens the first question instead of just scrolling.
+  useEffect(() => {
+    const open = () => {
+      movedByUser.current = true;
+      setStep((s) => (s === "start" ? "need" : s));
+    };
+    window.addEventListener(START_EVENT, open);
+    return () => window.removeEventListener(START_EVENT, open);
+  }, []);
+
+  // After each step change, move focus to the new question so screen readers and keyboards
+  // land on it (not on the button that just disappeared). Skipped on first load.
+  useEffect(() => {
+    if (!movedByUser.current) {
+      movedByUser.current = true;
+      return;
+    }
+    // Next tick, so a link's own #walk jump (header button) can't take focus back afterwards.
+    const id = window.setTimeout(() => {
+      const root = walkRef.current;
+      const q = root?.querySelector<HTMLElement>(".walk-q") ?? root?.querySelector<HTMLElement>("h1");
+      if (!root || !q) return;
+      q.setAttribute("tabindex", "-1");
+      q.focus({ preventScroll: true });
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      root.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [step]);
 
   const results = useMemo(
     () => (submitted ? matchFood(submitted, new Date(), lang) : null),
@@ -110,7 +148,7 @@ export default function FoodWalk() {
 
   return (
     <LangContext.Provider value={{ lang, t }}>
-      <div className="walk" id="walk" lang={lang}>
+      <div className="walk" id="walk" lang={lang} ref={walkRef}>
         <div className="lang-row">
           <button
             type="button"
