@@ -1,19 +1,29 @@
 "use client";
 
-import { FormEvent, useMemo, useState, type ReactNode } from "react";
+import {
+  FormEvent,
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { LIST_CHECKED_ON, OFFICIAL, type FoodPlace } from "@/data/albany-food";
 import {
   formatIsoDate,
   formatPhone,
   formatWhen,
-  isStaleSource,
   icsFileName,
   icsHref,
+  isStaleSource,
   mapsHref,
   matchFood,
   phoneHref,
   type PlaceMatch,
+  type WalkLang,
 } from "@/lib/food-week";
+import { WALK_TEXT, type WalkText } from "@/lib/walk-text";
 
 type Need = "tonight" | "snap" | "both";
 type SnapKind = "apply" | "renew" | "unsure";
@@ -31,7 +41,19 @@ type Step =
 
 type Check = "in" | "not" | "going" | "";
 
+const LangContext = createContext<{ lang: WalkLang; t: WalkText }>({ lang: "en", t: WALK_TEXT.en });
+const useLang = () => useContext(LangContext);
+const noSubscribe = () => () => {};
+
 export default function FoodWalk() {
+  // ?lang=es opens the walk in Spanish (shareable link). Nothing is stored; a tap on the toggle wins.
+  const urlSpanish = useSyncExternalStore(
+    noSubscribe,
+    () => new URLSearchParams(window.location.search).get("lang") === "es",
+    () => false,
+  );
+  const [chosenLang, setLang] = useState<WalkLang | null>(null);
+  const lang: WalkLang = chosenLang ?? (urlSpanish ? "es" : "en");
   const [step, setStep] = useState<Step>("start");
   const [need, setNeed] = useState<Need | "">("");
   const [snapKind, setSnapKind] = useState<SnapKind | "">("");
@@ -44,10 +66,11 @@ export default function FoodWalk() {
   const [foodCheck, setFoodCheck] = useState<Check>("");
   const [foodLeft, setFoodLeft] = useState("");
   const [foodSaved, setFoodSaved] = useState(false);
+  const t: WalkText = WALK_TEXT[lang];
 
   const results = useMemo(
-    () => (submitted ? matchFood(submitted, new Date()) : null),
-    [submitted],
+    () => (submitted ? matchFood(submitted, new Date(), lang) : null),
+    [submitted, lang],
   );
 
   function reset() {
@@ -78,275 +101,256 @@ export default function FoodWalk() {
   }
 
   const showFoodAfterSnap = need === "both";
+  const other: WalkLang = lang === "en" ? "es" : "en";
 
   return (
-    <div className="walk" id="walk">
-      <h1>Stuck on food? Start with one clear next step.</h1>
-      {step === "start" ? (
-        <div className="walk-start">
-          <button className="btn btn-primary" type="button" onClick={() => setStep("need")}>
-            Start with food
+    <LangContext.Provider value={{ lang, t }}>
+      <div className="walk" id="walk" lang={lang}>
+        <div className="lang-row">
+          <button
+            type="button"
+            className="lang-toggle"
+            lang={other}
+            aria-label={t.langToggleLabel}
+            aria-pressed={lang === "es"}
+            onClick={() => setLang(other)}
+          >
+            {t.langToggle}
           </button>
-          <p className="walk-scope">
-            Albany County. Food only. This walk does not call anyone or fill out a form.
-          </p>
         </div>
-      ) : (
-        <div className="walk-panel">
-          <div className="walk-top">
-            <p className="walk-kicker">Albany County · food</p>
-            <button className="text-btn" type="button" onClick={reset}>
-              Start over
+        <h1>{t.h1}</h1>
+        {step === "start" ? (
+          <div className="walk-start">
+            <button className="btn btn-primary" type="button" onClick={() => setStep("need")}>
+              {t.start}
             </button>
+            <p className="walk-scope">{t.scope}</p>
           </div>
-
-          {step === "need" && (
-            <div>
-              <h2 className="walk-q">What do you need?</h2>
-              <div className="choice-grid">
-                <button type="button" className="choice" onClick={() => chooseNeed("tonight")}>
-                  <strong>Hungry tonight</strong>
-                  <span>A pantry, meal, or produce stop this week.</span>
-                </button>
-                <button type="button" className="choice" onClick={() => chooseNeed("snap")}>
-                  <strong>SNAP / EBT</strong>
-                  <span>Where to apply or renew. You click the official site.</span>
-                </button>
-                <button type="button" className="choice" onClick={() => chooseNeed("both")}>
-                  <strong>Both</strong>
-                  <span>SNAP first, then food tonight.</span>
-                </button>
-              </div>
+        ) : (
+          <div className="walk-panel">
+            <div className="walk-top">
+              <p className="walk-kicker">{t.kicker}</p>
+              <button className="text-btn" type="button" onClick={reset}>
+                {t.startOver}
+              </button>
             </div>
-          )}
 
-          {step === "snap" && (
-            <div>
-              <h2 className="walk-q">Applying, or renewing?</h2>
-              <p className="walk-help">
-                That is the only question. Do not type a Social Security number, driver’s
-                license, myBenefits password, or anything from an ID.
-              </p>
-              <div className="choice-grid">
-                <button
-                  type="button"
-                  className="choice"
-                  onClick={() => {
-                    setSnapKind("apply");
-                    setStep("snap-next");
-                  }}
-                >
-                  <strong>Applying</strong>
-                  <span>First time, or no open case you know of.</span>
-                </button>
-                <button
-                  type="button"
-                  className="choice"
-                  onClick={() => {
-                    setSnapKind("renew");
-                    setStep("snap-next");
-                  }}
-                >
-                  <strong>Renewing</strong>
-                  <span>You already have SNAP and need to recertify.</span>
-                </button>
-                <button
-                  type="button"
-                  className="choice"
-                  onClick={() => {
-                    setSnapKind("unsure");
-                    setStep("snap-next");
-                  }}
-                >
-                  <strong>Not sure</strong>
-                  <span>Start with the official explainer, then the state site.</span>
-                </button>
+            {step === "need" && (
+              <div>
+                <h2 className="walk-q">{t.needQ}</h2>
+                <div className="choice-grid">
+                  <button type="button" className="choice" onClick={() => chooseNeed("tonight")}>
+                    <strong>{t.hungry}</strong>
+                    <span>{t.hungrySub}</span>
+                  </button>
+                  <button type="button" className="choice" onClick={() => chooseNeed("snap")}>
+                    <strong>{t.snapEbt}</strong>
+                    <span>{t.snapEbtSub}</span>
+                  </button>
+                  <button type="button" className="choice" onClick={() => chooseNeed("both")}>
+                    <strong>{t.both}</strong>
+                    <span>{t.bothSub}</span>
+                  </button>
+                </div>
               </div>
-              <button className="text-btn" type="button" onClick={() => setStep("need")}>
-                Back
-              </button>
-              {need === "both" && (
-                <button className="text-btn" type="button" onClick={() => setStep("where")}>
-                  I need food first
-                </button>
-              )}
-            </div>
-          )}
+            )}
 
-          {step === "snap-next" && <SnapNext kind={snapKind} onContinue={() => setStep("snap-check")} />}
-
-          {step === "snap-check" && (
-            <CheckBack
-              title="Did you get into SNAP?"
-              prompt="Did you open the official site, or reach the county line?"
-              value={snapCheck}
-              note={snapLeft}
-              saved={snapSaved}
-              onValue={setSnapCheck}
-              onNote={setSnapLeft}
-              onSave={() => setSnapSaved(true)}
-              next={
-                showFoodAfterSnap
-                  ? { label: "Now food tonight", onClick: () => setStep("where") }
-                  : { label: "Done for now", onClick: () => setStep("done") }
-              }
-            />
-          )}
-
-          {step === "where" && (
-            <form onSubmit={onWhere}>
-              <h2 className="walk-q">Where in Albany County?</h2>
-              <p className="walk-help">
-                A ZIP or a neighborhood. We use it only to sort this list. It is not sent
-                anywhere.
-              </p>
-              <label htmlFor="where">ZIP or neighborhood</label>
-              <input
-                id="where"
-                name="where"
-                value={placeQuery}
-                onChange={(e) => setPlaceQuery(e.target.value)}
-                placeholder="12206 or Arbor Hill"
-                autoComplete="postal-code"
-                maxLength={40}
-                required
-              />
-              <button className="btn btn-primary" type="submit">
-                Show this week
-              </button>
-              <button
-                className="text-btn"
-                type="button"
-                onClick={() => setStep(need === "tonight" ? "need" : "snap-check")}
-              >
-                Back
-              </button>
-            </form>
-          )}
-
-          {step === "options" && results && (
-            <Options
-              query={submitted}
-              result={results}
-              onPick={(match) => {
-                setPicked(match);
-                setStep("script");
-              }}
-              onBack={() => setStep("where")}
-            />
-          )}
-
-          {step === "script" && picked && (
-            <FoodScript
-              match={picked}
-              area={submitted}
-              onCheck={() => setStep("food-check")}
-              onBack={() => setStep("options")}
-            />
-          )}
-
-          {step === "food-check" && picked && (
-            <CheckBack
-              title="Did you get in?"
-              prompt={`At ${picked.place.name} — did you get food?`}
-              value={foodCheck}
-              note={foodLeft}
-              saved={foodSaved}
-              onValue={setFoodCheck}
-              onNote={setFoodLeft}
-              onSave={() => setFoodSaved(true)}
-              extra={
-                foodCheck === "not" ? (
-                  <p className="walk-help">
-                    Next: call the pantry, or the Food Pantries referral line{" "}
-                    <a href={OFFICIAL.referral.phoneHref}>{OFFICIAL.referral.phone}</a>.
-                    HelpGetUp does not call for you. You can also{" "}
-                    <button type="button" className="text-btn inline" onClick={() => setStep("options")}>
-                      pick another stop
+            {step === "snap" && (
+              <div>
+                <h2 className="walk-q">{t.snapQ}</h2>
+                <p className="walk-help">{t.snapHelp}</p>
+                <div className="choice-grid">
+                  {(
+                    [
+                      ["apply", t.applying, t.applyingSub],
+                      ["renew", t.renewing, t.renewingSub],
+                      ["unsure", t.notSure, t.notSureSub],
+                    ] as const
+                  ).map(([kind, label, sub]) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      className="choice"
+                      data-kind={kind}
+                      onClick={() => {
+                        setSnapKind(kind);
+                        setStep("snap-next");
+                      }}
+                    >
+                      <strong>{label}</strong>
+                      <span>{sub}</span>
                     </button>
-                    .
-                  </p>
-                ) : null
-              }
-              next={
-                need === "both" && snapKind === ""
-                  ? { label: "Now the SNAP step", onClick: () => setStep("snap") }
-                  : { label: "Done for now", onClick: () => setStep("done") }
-              }
-            />
-          )}
+                  ))}
+                </div>
+                <button className="text-btn" type="button" onClick={() => setStep("need")}>
+                  {t.back}
+                </button>
+                {need === "both" && (
+                  <button className="text-btn" type="button" onClick={() => setStep("where")}>
+                    {t.foodFirst}
+                  </button>
+                )}
+              </div>
+            )}
 
-          {step === "done" && (
-            <div>
-              <h2 className="walk-q">That’s the next step.</h2>
-              <p className="walk-help">
-                You stay in control of what happens after this. The waitlist below is
-                optional — it is not required to use this walk.
-              </p>
-              <button className="btn btn-primary" type="button" onClick={reset}>
-                Walk it again
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+            {step === "snap-next" && <SnapNext kind={snapKind} onContinue={() => setStep("snap-check")} />}
+
+            {step === "snap-check" && (
+              <CheckBack
+                title={t.snapCheckTitle}
+                prompt={t.snapCheckPrompt}
+                value={snapCheck}
+                note={snapLeft}
+                saved={snapSaved}
+                onValue={setSnapCheck}
+                onNote={setSnapLeft}
+                onSave={() => setSnapSaved(true)}
+                next={
+                  showFoodAfterSnap
+                    ? { label: t.nowFood, onClick: () => setStep("where") }
+                    : { label: t.doneForNow, onClick: () => setStep("done") }
+                }
+              />
+            )}
+
+            {step === "where" && (
+              <form onSubmit={onWhere}>
+                <h2 className="walk-q">{t.whereQ}</h2>
+                <p className="walk-help">{t.whereHelp}</p>
+                <label htmlFor="where">{t.whereLabel}</label>
+                <input
+                  id="where"
+                  name="where"
+                  value={placeQuery}
+                  onChange={(e) => setPlaceQuery(e.target.value)}
+                  placeholder={t.wherePlaceholder}
+                  autoComplete="postal-code"
+                  maxLength={40}
+                  required
+                />
+                <button className="btn btn-primary" type="submit">
+                  {t.showWeek}
+                </button>
+                <button
+                  className="text-btn"
+                  type="button"
+                  onClick={() => setStep(need === "tonight" ? "need" : "snap-check")}
+                >
+                  {t.back}
+                </button>
+              </form>
+            )}
+
+            {step === "options" && results && (
+              <Options
+                query={submitted}
+                result={results}
+                onPick={(match) => {
+                  setPicked(match);
+                  setStep("script");
+                }}
+                onBack={() => setStep("where")}
+              />
+            )}
+
+            {step === "script" && picked && (
+              <FoodScript
+                match={picked}
+                area={submitted}
+                onCheck={() => setStep("food-check")}
+                onBack={() => setStep("options")}
+              />
+            )}
+
+            {step === "food-check" && picked && (
+              <CheckBack
+                title={t.foodCheckTitle}
+                prompt={t.foodCheckPrompt(picked.place.name)}
+                value={foodCheck}
+                note={foodLeft}
+                saved={foodSaved}
+                onValue={setFoodCheck}
+                onNote={setFoodLeft}
+                onSave={() => setFoodSaved(true)}
+                extra={
+                  foodCheck === "not" ? (
+                    <p className="walk-help">
+                      {t.notInNext1}{" "}
+                      <a href={OFFICIAL.referral.phoneHref}>{OFFICIAL.referral.phone}</a>.{" "}
+                      {t.notInNext2}{" "}
+                      <button type="button" className="text-btn inline" onClick={() => setStep("options")}>
+                        {t.pickAnother}
+                      </button>
+                      .
+                    </p>
+                  ) : null
+                }
+                next={
+                  need === "both" && snapKind === ""
+                    ? { label: t.nowSnap, onClick: () => setStep("snap") }
+                    : { label: t.doneForNow, onClick: () => setStep("done") }
+                }
+              />
+            )}
+
+            {step === "done" && (
+              <div>
+                <h2 className="walk-q">{t.doneTitle}</h2>
+                <p className="walk-help">{t.doneHelp}</p>
+                <button className="btn btn-primary" type="button" onClick={reset}>
+                  {t.again}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </LangContext.Provider>
   );
 }
 
 function SnapNext({ kind, onContinue }: { kind: SnapKind | ""; onContinue: () => void }) {
-  const lead =
-    kind === "renew"
-      ? "Renew on myBenefits. You sign in there, not here."
-      : kind === "apply"
-        ? "Start the application on myBenefits. You click their site. We do not open it as you."
-        : "If you are not sure you have a case, read the program path on America.gov first. Renewals still happen on myBenefits.";
+  const { t } = useLang();
+  const lead = kind === "renew" ? t.snapLeadRenew : kind === "apply" ? t.snapLeadApply : t.snapLeadUnsure;
 
   return (
     <div>
-      <h2 className="walk-q">Your next step for SNAP</h2>
+      <h2 className="walk-q">{t.snapNextTitle}</h2>
       <p className="walk-help">{lead}</p>
       <ol className="official-list">
         <li>
           <a href={OFFICIAL.americaGov.url} target="_blank" rel="noopener noreferrer">
             {OFFICIAL.americaGov.name}
           </a>
-          <p>{OFFICIAL.americaGov.detail}</p>
-          <p className="say">
-            What to ask there: “How do I apply for SNAP in Albany County, New York?”
-          </p>
+          <p>{t.americaGovDetail}</p>
+          <p className="say">{t.askThere}</p>
         </li>
         <li>
           <a href={OFFICIAL.myBenefits.url} target="_blank" rel="noopener noreferrer">
             {OFFICIAL.myBenefits.name}
           </a>
-          <p>{OFFICIAL.myBenefits.detail}</p>
+          <p>{t.myBenefitsDetail}</p>
         </li>
         <li>
           <a href={OFFICIAL.hotline.phoneHref}>{OFFICIAL.hotline.phone}</a>
           <p>
-            {OFFICIAL.hotline.name}. {OFFICIAL.hotline.hours}. You call. We do not.
+            {t.hotlineName}. {t.hotlineHours}. {t.youCall}
           </p>
           <p>
-            Office address on the county page: {OFFICIAL.hotline.address}.{" "}
+            {t.officeAddress} {OFFICIAL.hotline.address}.{" "}
             <a href={OFFICIAL.hotline.url} target="_blank" rel="noopener noreferrer">
-              {OFFICIAL.hotline.pageName}
+              {t.countyPage}
             </a>
             .
           </p>
           <p className="say">
-            What to say: “I need to {kind === "renew" ? "renew" : "apply for"} SNAP in
-            Albany County.” Have a case number only if you already have one. Do not give
-            that number to HelpGetUp.
+            {kind === "renew" ? t.sayRenew : t.sayApply} {t.caseNumber}
           </p>
         </li>
       </ol>
-      <p className="walk-help">
-        HelpGetUp never collects a Social Security number, driver’s license, myBenefits
-        password, or ID photo. There is no place to store one here.
-      </p>
+      <p className="walk-help">{t.neverCollect}</p>
       <button className="btn btn-primary" type="button" onClick={onContinue}>
-        Check back
+        {t.checkBack}
       </button>
     </div>
   );
@@ -363,22 +367,23 @@ function Options({
   onPick: (match: PlaceMatch) => void;
   onBack: () => void;
 }) {
+  const { lang, t } = useLang();
   if (!result.ok) {
     const message =
       result.reason === "ssn"
-        ? "Don’t put a Social Security number here. A ZIP or a neighborhood is enough."
+        ? t.errSsn
         : result.reason === "empty"
-          ? "Enter a ZIP or an Albany County neighborhood."
+          ? t.errEmpty
           : result.detail && /^\d{5}$/.test(result.detail)
-            ? `${result.detail} is outside this demo. HelpGetUp’s food list is Albany County only. For SNAP in another state, start at America.gov. For pantries outside this county, use the Food Connect map.`
-            : `“${query}” isn’t a ZIP or neighborhood this demo knows. Try 12206, South End, Cohoes, or Ravena.`;
+            ? t.errOutsideZip(result.detail)
+            : t.errUnknown(query);
     return (
       <div>
-        <h2 className="walk-q">Can’t match that yet</h2>
+        <h2 className="walk-q">{t.cantMatch}</h2>
         <p className="walk-help">{message}</p>
         <p className="walk-help">
           <a href={OFFICIAL.map.url} target="_blank" rel="noopener noreferrer">
-            Food Connect map
+            {t.foodConnectMap}
           </a>
           {" · "}
           <a href={OFFICIAL.americaGov.url} target="_blank" rel="noopener noreferrer">
@@ -386,7 +391,7 @@ function Options({
           </a>
         </p>
         <button className="text-btn" type="button" onClick={onBack}>
-          Try another place
+          {t.tryAnother}
         </button>
       </div>
     );
@@ -394,50 +399,48 @@ function Options({
 
   return (
     <div>
-      <h2 className="walk-q">This week near {result.label}</h2>
+      <h2 className="walk-q">{t.thisWeekNear(result.label)}</h2>
       <p className="walk-help">
-        Week of {result.weekLabel}. {result.places.length} stops, closest first. Hours
-        can change. If an end time was not published, the card says so. Confirm with the
-        phone number or{" "}
-        <a href={OFFICIAL.referral.phoneHref}>{OFFICIAL.referral.phone}</a> (Food
-        Pantries referral line). We do not call.
+        {t.weekHelp1(result.weekLabel, result.places.length)}{" "}
+        <a href={OFFICIAL.referral.phoneHref}>{OFFICIAL.referral.phone}</a> {t.weekHelp2}
       </p>
       {LIST_CHECKED_ON ? (
         <p className="checked-stamp">
           <span aria-hidden="true">✓</span>
           <span>
-            List last checked against its sources on{" "}
-            <time dateTime={LIST_CHECKED_ON}>{formatIsoDate(LIST_CHECKED_ON)}</time>.
+            {t.listChecked}{" "}
+            <time dateTime={LIST_CHECKED_ON}>{formatIsoDate(LIST_CHECKED_ON, lang)}</time>.
           </span>
         </p>
       ) : null}
+      {t.sourceInEnglish ? <p className="walk-help fine">{t.sourceInEnglish}</p> : null}
       {result.places.length === 0 ? (
         <p className="walk-help">
-          Nothing in this file has a published time left this week for that spot. Use the{" "}
+          {t.nothingLeft1}{" "}
           <a href={OFFICIAL.map.url} target="_blank" rel="noopener noreferrer">
-            Food Connect map
+            {t.foodConnectMap}
           </a>{" "}
-          or call {OFFICIAL.referral.phone}.
+          {t.nothingLeft2} {OFFICIAL.referral.phone}.
         </p>
       ) : (
         <ul className="place-list">
           {result.places.map((match) => (
             <li key={match.place.id}>
               <article className="place-card">
-                <h3>{match.place.name}</h3>
+                <h3 lang="en">{match.place.name}</h3>
                 <p className="when">
                   {match.opening
-                    ? formatWhen(match.opening)
+                    ? formatWhen(match.opening, lang)
                     : match.place.alwaysOpen
-                      ? "Open 24/7, per the source"
-                      : "Hours not published"}
-                  {match.opening?.nextWeek ? " · next opening is next week" : ""}
+                      ? t.open247
+                      : t.hoursNotPublished}
+                  {match.opening?.nextWeek ? t.nextWeek : ""}
                 </p>
                 <p>
                   {match.place.address}, {match.place.city} {match.place.zip}
                   {" · "}
                   <a href={mapsHref(match.place)} target="_blank" rel="noopener noreferrer">
-                    Open in Maps
+                    {t.openInMaps}
                   </a>
                 </p>
                 <p>
@@ -445,15 +448,15 @@ function Options({
                 </p>
                 {match.place.hoursRaw ? (
                   <p className="hours-raw">
-                    <span>Published hours: </span>
-                    {match.place.hoursRaw}
+                    <span>{t.publishedHours}</span>
+                    <span lang="en">{match.place.hoursRaw}</span>
                   </p>
                 ) : (
-                  <p className="hours-raw">Published hours: not listed. Don’t assume it is open.</p>
+                  <p className="hours-raw">{t.hoursNotListed}</p>
                 )}
                 <SourceLine place={match.place} />
                 <button className="btn btn-primary" type="button" onClick={() => onPick(match)}>
-                  Use this stop
+                  {t.useStop}
                 </button>
               </article>
             </li>
@@ -461,18 +464,18 @@ function Options({
         </ul>
       )}
       <p className="walk-help">
-        Full map:{" "}
+        {t.fullMap}{" "}
         <a href={OFFICIAL.map.url} target="_blank" rel="noopener noreferrer">
           {OFFICIAL.map.name}
         </a>
-        . Flyer:{" "}
+        . {t.flyer}{" "}
         <a href={OFFICIAL.flyer.url} target="_blank" rel="noopener noreferrer">
           {OFFICIAL.flyer.name}
         </a>
         .
       </p>
       <button className="text-btn" type="button" onClick={onBack}>
-        Change ZIP
+        {t.changeZip}
       </button>
     </div>
   );
@@ -489,52 +492,36 @@ function FoodScript({
   onCheck: () => void;
   onBack: () => void;
 }) {
+  const { lang, t } = useLang();
   const place: FoodPlace = match.place;
   const when = match.opening
-    ? formatWhen(match.opening)
+    ? formatWhen(match.opening, lang)
     : place.alwaysOpen
-      ? "open 24/7"
-      : "hours not published";
-  const kindWord = place.kind === "meal" ? "the community meal" : "food";
+      ? t.whenOpen247
+      : t.whenUnknown;
 
   return (
     <div>
-      <h2 className="walk-q">What to say at {place.name}</h2>
+      <h2 className="walk-q">{t.scriptTitle(place.name)}</h2>
       <p className="when">{when}</p>
-      <p className="say">
-        “Hi, I need {kindWord}. I’m in {area}. Are you open {when}? Do I need to call
-        ahead?”
-      </p>
-      <p className="walk-help">
-        What to bring: only what they ask for. This demo does not have a confirmed
-        document list for this stop. Call {formatPhone(place.phone)} and ask. Common
-        asks are an ID and something with your address — treat that as a guess until
-        they say so.
-      </p>
-      {place.note ? <p className="walk-help">From the source: {place.note}</p> : null}
+      <p className="say">{t.say(place.kind === "meal" ? "meal" : "food", area, when)}</p>
+      <p className="walk-help">{t.bring(formatPhone(place.phone))}</p>
+      {place.note ? (
+        <p className="walk-help">
+          {t.fromSource} <span lang="en">{place.note}</span>
+        </p>
+      ) : null}
       <div className="walk-actions">
-        <a
-          className="btn btn-ghost"
-          href={mapsHref(place)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Open in Maps
+        <a className="btn btn-ghost" href={mapsHref(place)} target="_blank" rel="noopener noreferrer">
+          {t.openInMaps}
         </a>
         {match.opening ? (
-          <a
-            className="btn btn-ghost"
-            href={icsHref(place, match.opening)}
-            download={icsFileName(place)}
-          >
-            Add to calendar
+          <a className="btn btn-ghost" href={icsHref(place, match.opening)} download={icsFileName(place)}>
+            {t.addToCalendar}
           </a>
         ) : null}
       </div>
-      <p className="walk-help fine">
-        Maps and the calendar file use only this stop’s published address and hours.
-        Nothing about you is added or sent.
-      </p>
+      <p className="walk-help fine">{t.mapsCalFine}</p>
       <SourceLine place={place} />
       <p className="source-line">
         <a href={phoneHref(place.phone)}>{formatPhone(place.phone)}</a>
@@ -542,10 +529,10 @@ function FoodScript({
         {place.address}, {place.city} {place.zip}
       </p>
       <button className="btn btn-primary" type="button" onClick={onCheck}>
-        I picked this. Check back.
+        {t.pickedCheck}
       </button>
       <button className="text-btn" type="button" onClick={onBack}>
-        Pick a different stop
+        {t.pickDifferent}
       </button>
     </div>
   );
@@ -574,6 +561,7 @@ function CheckBack({
   next: { label: string; onClick: () => void };
   extra?: ReactNode;
 }) {
+  const { t } = useLang();
   return (
     <div>
       <h2 className="walk-q">{title}</h2>
@@ -581,36 +569,34 @@ function CheckBack({
       <div className="choice-grid compact">
         {(
           [
-            ["in", "I got in"],
-            ["not", "Not this time"],
-            ["going", "Still going"],
+            ["in", t.gotIn],
+            ["not", t.notThisTime],
+            ["going", t.stillGoing],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
             type="button"
             className={value === id ? "choice selected" : "choice"}
+            data-check={id}
             onClick={() => onValue(id)}
           >
             <strong>{label}</strong>
           </button>
         ))}
       </div>
-      <label htmlFor="left">What’s left?</label>
+      <label htmlFor="left">{t.whatsLeft}</label>
       <textarea
         id="left"
         value={note}
         onChange={(e) => onNote(e.target.value)}
         rows={3}
         maxLength={400}
-        placeholder="Optional. Stays on this page. Not sent."
+        placeholder={t.notePlaceholder}
       />
-      <p className="walk-help">
-        This note stays in the browser until you leave or start over. HelpGetUp does
-        not email it, store it, or call anyone about it.
-      </p>
+      <p className="walk-help">{t.noteHelp}</p>
       <button className="btn btn-ghost" type="button" onClick={onSave} disabled={!value && !note}>
-        {saved ? "Noted on this page" : "Keep this note here"}
+        {saved ? t.noted : t.keepNote}
       </button>
       {extra}
       <button className="btn btn-primary" type="button" onClick={next.onClick}>
@@ -621,30 +607,25 @@ function CheckBack({
 }
 
 function SourceLine({ place }: { place: FoodPlace }) {
+  const { lang, t } = useLang();
   const stale = isStaleSource(place);
   return (
     <>
-      {stale ? (
-        <p className="stale-flag">
-          Older listing: the source last updated this stop on{" "}
-          {formatIsoDate(place.sourceUpdated)}. Call before you go.
-        </p>
-      ) : null}
+      {stale ? <p className="stale-flag">{t.olderListing(formatIsoDate(place.sourceUpdated, lang))}</p> : null}
       <p className="source-line">
-        Source:{" "}
+        {t.source}{" "}
         <a href={place.sourceUrl} target="_blank" rel="noopener noreferrer">
           {place.sourceName}
         </a>
-        . Source updated{" "}
-        <time dateTime={place.sourceUpdated}>{formatIsoDate(place.sourceUpdated)}</time>.
+        . {t.sourceUpdated}{" "}
+        <time dateTime={place.sourceUpdated}>{formatIsoDate(place.sourceUpdated, lang)}</time>.
         {place.verifiedOn ? (
           <>
             {" "}
-            Last verified by HelpGetUp{" "}
-            <time dateTime={place.verifiedOn}>{formatIsoDate(place.verifiedOn)}</time>.
+            {t.lastVerified} <time dateTime={place.verifiedOn}>{formatIsoDate(place.verifiedOn, lang)}</time>.
           </>
         ) : (
-          " Not yet re-checked by HelpGetUp."
+          t.notRechecked
         )}
       </p>
     </>

@@ -199,12 +199,15 @@ export type MatchResult =
   | { ok: false; reason: "empty" | "ssn" | "outside"; detail?: string }
   | { ok: true; label: string; zips: string[]; places: PlaceMatch[]; weekLabel: string };
 
-function weekLabel(now: Date): string {
+export type WalkLang = "en" | "es";
+const LOCALE: Record<WalkLang, string> = { en: "en-US", es: "es-US" };
+
+function weekLabel(now: Date, lang: WalkLang = "en"): string {
   const p = nyParts(now);
   const mondayOffset = p.weekday === 0 ? -6 : 1 - p.weekday;
   const monday = shiftDays(p, mondayOffset);
   const sunday = shiftDays(p, mondayOffset + 6);
-  const fmt = new Intl.DateTimeFormat("en-US", {
+  const fmt = new Intl.DateTimeFormat(LOCALE[lang], {
     timeZone: "America/New_York",
     month: "short",
     day: "numeric",
@@ -271,7 +274,7 @@ function distance(placeZip: string, targets: string[]): number {
   return 3;
 }
 
-export function matchFood(raw: string, now: Date): MatchResult {
+export function matchFood(raw: string, now: Date, lang: WalkLang = "en"): MatchResult {
   const resolved = resolvePlaceQuery(raw);
   if ("error" in resolved) {
     return { ok: false, reason: resolved.error, detail: resolved.detail };
@@ -342,25 +345,29 @@ export function matchFood(raw: string, now: Date): MatchResult {
     label: resolved.label,
     zips: resolved.zips,
     places,
-    weekLabel: weekLabel(now),
+    weekLabel: weekLabel(now, lang),
   };
 }
 
-export function formatWhen(opening: Opening): string {
-  const label = new Intl.DateTimeFormat("en-US", {
+export function formatWhen(opening: Opening, lang: WalkLang = "en"): string {
+  const label = new Intl.DateTimeFormat(LOCALE[lang], {
     timeZone: "America/New_York",
     weekday: "long",
     month: "short",
     day: "numeric",
   }).format(opening.date);
-  const start = formatClock(opening.start);
-  if (!opening.end) return `${label} · starts ${start} (end time not published)`;
-  return `${label} · ${start}–${formatClock(opening.end)}`;
+  const start = formatClock(opening.start, lang);
+  if (!opening.end) {
+    return lang === "es"
+      ? `${label} · empieza ${start} (no publicaron la hora de cierre)`
+      : `${label} · starts ${start} (end time not published)`;
+  }
+  return `${label} · ${start}–${formatClock(opening.end, lang)}`;
 }
 
-export function formatClock(hhmm: string): string {
+export function formatClock(hhmm: string, lang: WalkLang = "en"): string {
   const [h, m] = hhmm.split(":").map(Number);
-  const suffix = h >= 12 ? "pm" : "am";
+  const suffix = lang === "es" ? (h >= 12 ? " p. m." : " a. m.") : h >= 12 ? "pm" : "am";
   const hour = h % 12 === 0 ? 12 : h % 12;
   const min = m === 0 ? "" : `:${String(m).padStart(2, "0")}`;
   return `${hour}${min}${suffix}`;
@@ -469,11 +476,15 @@ export function icsFileName(place: FoodPlace): string {
   return `helpgetup-${place.id}.ics`;
 }
 
-/** "2026-10-09" → "Oct 9, 2026". Date-only, no time zone shift. */
-export function formatIsoDate(iso: string | undefined): string {
+/** "2026-10-09" → "Oct 9, 2026" (en) or "9 de oct. de 2026" (es). Date-only, no time zone shift. */
+export function formatIsoDate(iso: string | undefined, lang: WalkLang = "en"): string {
   if (!iso) return "";
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return iso;
+  if (lang === "es") {
+    const meses = ["ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sept.", "oct.", "nov.", "dic."];
+    return `${d} de ${meses[m - 1]} de ${y}`;
+  }
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${months[m - 1]} ${d}, ${y}`;
 }
