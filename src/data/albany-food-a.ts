@@ -325,7 +325,7 @@ export const FOOD_PLACES_A: FoodPlace[] = [
       zip: "12207",
       phone: "(518) 274-2607",
       hoursRaw: "Every 3rd Thursday 1pm-3:30pm",
-      note: "From the February 2026 Albany flyer (A Child's Place). This is not the Cohoes or Watervliet Unity stops.",
+      note: "From the February 2026 Albany flyer (A Child's Place), the newest Albany flyer published. This Albany stop is not on the Food Connect map (checked Oct 9, 2026), so call before you go. This is not the Cohoes or Watervliet Unity stops.",
       sourceName: FLYER,
       sourceUrl: FLYER_URL,
       sourceUpdated: "2026-02-01",

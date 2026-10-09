@@ -82,7 +82,7 @@ export const STALE_AFTER_MONTHS = 12;
  * Official links and numbers. Re-checked 2026-10-09:
  * - America.gov: 200, titled "America.gov", federal "start here" question site.
  * - myBenefits: live, "Apply for SNAP" and "Recertify Benefits" on the front page (OTDA).
- * - Albany County SNAP hotline 518-447-7620, Mon–Fri 8am–5pm, 162 Washington Ave:
+ * - Albany County SNAP hotline 518-447-7620, Mon–Fri 8am–5pm, 162 Washington Ave, 5th floor:
  *   albanycountyny.gov/supplemental-nutrition-assistance-program-snap.
  * - Food Pantries referral line 518-458-1167: same county page ("Don't Go Hungry").
  * scripts/check-links.ts re-checks every URL in this file.
@@ -107,7 +107,7 @@ export const OFFICIAL = {
     phone: "(518) 447-7620",
     phoneHref: "tel:+15184477620",
     hours: "Monday–Friday, 8:00am–5:00pm",
-    address: "162 Washington Avenue, Albany, NY 12210",
+    address: "162 Washington Avenue, 5th floor, Albany, NY 12210",
     url: "https://www.albanycountyny.gov/supplemental-nutrition-assistance-program-snap",
     pageName: "Albany County SNAP page",
   },

@@ -79,13 +79,14 @@ export const FOOD_PLACES_C: FoodPlace[] = [
       zip: "12204",
       phone: "518-434-0680",
       hoursRaw: "Tues 1:00pm-3:00pm, Thus 10:00am-11:45pm",
-      note: "Separate from the Wednesday Friendship Table meal at the same address. The map prints Thursday as “Thus” and an end time of 11:45pm. This page did not correct that. Confirm before you go.",
+      note: "Separate from the Wednesday Friendship Table meal at the same address. The map prints Thursday as “Thus” and an end time of 11:45pm, which is probably a typo for 11:45am. This page does not guess: it shows Thursday's end time as not published. Call before you go.",
       sourceName: MAP,
       sourceUrl: MAP_URL,
       sourceUpdated: "2026-02-17",
       slots: [
         { weekdays: [2], start: "13:00", end: "15:00" },
-        { weekdays: [4], start: "10:00", end: "23:45" },
+        // Source prints "11:45pm" (likely a typo for am). End left null so the page never shows it open until midnight.
+        { weekdays: [4], start: "10:00", end: null },
       ],
     },
   {

@@ -194,7 +194,7 @@ export const FOOD_PLACES_B: FoodPlace[] = [
       zip: "12047",
       phone: "518-257-2501",
       hoursRaw: "Tuesday and Thursday 10am-12pm, must call ahead",
-      note: "Must call ahead. Pickup is in the school building behind the church. About every 30 days.",
+      note: "The hours line says must call ahead; the same map row also says walk-ins welcome. Call first. Pickup is in the school building behind the church. About every 30 days.",
       sourceName: MAP,
       sourceUrl: MAP_URL,
       sourceUpdated: "2026-04-23",
@@ -274,7 +274,7 @@ export const FOOD_PLACES_B: FoodPlace[] = [
       phone: "(518) 596-6691",
       hoursRaw:
         "1st and 2nd Monday of the month 9-11am, 3rd and 4th Monday 5-7pm",
-      note: "Not open on a 5th Monday. Proof of address every 4 months. Walk-in. Emergency bags by appointment.",
+      note: "Monday holidays: the map says the pantry moves to the next day (Tuesday), so call before going on a holiday Monday. Not open on a 5th Monday. Twice a month, walk-in. Proof of address every 4 months. Emergency bags by appointment.",
       sourceName: MAP,
       sourceUrl: MAP_URL,
       sourceUpdated: "2025-03-05",
