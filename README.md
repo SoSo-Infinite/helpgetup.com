@@ -27,6 +27,13 @@ The homepage walk is food-only and Albany County only. Stops live in `src/data/a
 - Offline: `public/sw.js` (production only) keeps the last loaded page and its assets, so the walk works without signal after one visit. It never caches `/api/*`.
 - Spanish: the toggle above the walk (or `/?lang=es`) switches the walk to Spanish. Source names, hours and notes stay in English as published. The Spanish text in `src/lib/walk-text.ts` is a first draft that needs a native speaker's review.
 
+### Senior meals and Veggie Mobile (Oct 9, 2026)
+- Senior (60+) meal sites: `src/data/albany-senior-meals.ts`. All 24 Albany County Department for Aging congregate dining sites, plus how to ask for home-delivered meals (Albany County NY Connects, 518-447-7177). Days and times appear only where the county or the site's sponsor publishes them (LifePath Community Dining, Colonie Senior Service Centers' monthly newsletter, Town of Berne). Every other site shows "60+, call first" with the official phone. When sources disagree, the card says so. The walk shows this group only after the person checks "I'm 60 or older" or taps "60 or older? Show senior meal sites".
+- Capital Roots Veggie Mobile: `src/data/albany-food-veggie.ts`. 14 Albany County stops copied from Capital Roots' own 2026 schedule PDF (effective June 15, 2026). The PDF is an image, so `verify:sources` checks that the Veggie Mobile page still links the same file and that its bytes haven't changed. A changed hash means re-read it by hand.
+- `npm run check:seniors` checks the data rules (no slot without a published day and time, no end times, 24 sites, every phone dialable) and the ranking.
+- `verify:sources` also checks LifePath's page (parsed), the Berne page, and the CSSC newsletter hash. The county's congregate dining panels are drawn by JavaScript, so pass `--county-snapshot <file>`, rendered by `render-county-congregate.mjs` in the portfolio evidence folder. Without the snapshot, county-only sites print "not checked" and keep their old verified date.
+- Phone links: an extension or "press N" now dials as a pause (`tel:+15184631516,110`).
+
 ## Deploy
 
 Vercel project `helpgetup-com`, domain `helpgetup.com` / `www.helpgetup.com`.
