@@ -327,6 +327,13 @@ function SnapNext({ kind, onContinue }: { kind: SnapKind | ""; onContinue: () =>
           <p>
             {OFFICIAL.hotline.name}. {OFFICIAL.hotline.hours}. You call. We do not.
           </p>
+          <p>
+            In person: {OFFICIAL.hotline.address}.{" "}
+            <a href={OFFICIAL.hotline.url} target="_blank" rel="noopener noreferrer">
+              {OFFICIAL.hotline.pageName}
+            </a>
+            .
+          </p>
           <p className="say">
             What to say: “I need to {kind === "renew" ? "renew" : "apply for"} SNAP in
             Albany County.” Have a case number only if you already have one. Do not give
