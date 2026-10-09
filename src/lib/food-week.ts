@@ -373,19 +373,39 @@ export function formatClock(hhmm: string, lang: WalkLang = "en"): string {
   return `${hour}${min}${suffix}`;
 }
 
-export function formatPhone(raw: string): string {
-  const ext = raw.match(/(?:ext\.?|x)\s*[\d]+/i);
-  const digits = raw.replace(/\D/g, "");
-  const d = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
-  if (d.length < 10) return raw;
-  const main = `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6, 10)}`;
-  return ext ? `${main} ${ext[0].replace(/\s+/g, " ")}` : main;
+/** Main 10-digit number plus any extension or "press N" the source printed after it. */
+function splitPhone(raw: string): { main: string; ext: string; press: string } | null {
+  const m = raw.match(/^\s*(?:\+?1[\s.-]*)?\(?(\d{3})\)?[\s.-]*(\d{3})[\s.-]*(\d{4})(.*)$/);
+  if (!m) return null;
+  const rest = m[4];
+  return {
+    main: `${m[1]}${m[2]}${m[3]}`,
+    ext: rest.match(/(?:ext\.?|x)\s*(\d+)/i)?.[1] ?? "",
+    press: rest.match(/press\s*(\d)/i)?.[1] ?? "",
+  };
 }
 
+export function formatPhone(raw: string): string {
+  const p = splitPhone(raw);
+  if (!p) return raw;
+  const d = p.main;
+  const main = `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6, 10)}`;
+  const ext = raw.match(/(?:ext\.?|x)\s*\d+/i);
+  if (ext) return `${main} ${ext[0].replace(/\s+/g, " ")}`;
+  if (p.press) return `${main}, press ${p.press}`;
+  return main;
+}
+
+/**
+ * tel: link. An extension or "press N" becomes a pause (",") then the digits, so the phone dials the
+ * main number and then the extension. (Before 2026-10-09 the extension digits were glued onto the
+ * number, e.g. tel:5184631516110, which would not dial.)
+ */
 export function phoneHref(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  const d = digits.length === 11 && digits.startsWith("1") ? digits : digits.length === 10 ? `1${digits}` : "";
-  return d ? `tel:+${d}` : `tel:${digits}`;
+  const p = splitPhone(raw);
+  if (!p) return `tel:${raw.replace(/\D/g, "")}`;
+  const tail = p.ext || p.press;
+  return `tel:+1${p.main}${tail ? `,${tail}` : ""}`;
 }
 
 /**

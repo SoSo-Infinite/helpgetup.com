@@ -1,6 +1,6 @@
 import { ALBANY_COUNTY_ZIPS, FOOD_PLACES } from "../src/data/albany-food";
 import { VEGGIE_MOBILE_STOPS, VEGGIE_SCHEDULE_URL } from "../src/data/albany-food-veggie";
-import { formatWhen, matchFood, nyParts, openingsFor, zonedDate } from "../src/lib/food-week";
+import { formatWhen, matchFood, nyParts, openingsFor, phoneHref, zonedDate } from "../src/lib/food-week";
 
 const now = zonedDate(2026, 9, 30, 20, 15);
 const parts = nyParts(now);
@@ -97,6 +97,12 @@ if (library.length !== 1 || !library[0].startsWith("Thursday, Oct 1") || !librar
 }
 const uscri = names("vm-uscri");
 if (uscri.length !== 0) throw new Error("USCRI is Tuesday only; nothing left Wed–Sun: " + uscri.join(" | "));
+
+// Every published phone must give a dialable tel: link; an extension becomes a pause, not extra digits.
+for (const p of FOOD_PLACES) {
+  if (!/^tel:\+1\d{10}(,\d+)?$/.test(phoneHref(p.phone))) throw new Error(`bad tel link for ${p.id}: ${p.phone} -> ${phoneHref(p.phone)}`);
+}
+if (phoneHref("(518) 463-1516 ext 110") !== "tel:+15184631516,110") throw new Error("extension must follow a pause");
 
 console.log("week", south.weekLabel);
 for (const m of south.places) {
