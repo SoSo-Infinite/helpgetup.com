@@ -1,4 +1,5 @@
-import { FOOD_PLACES } from "../src/data/albany-food";
+import { ALBANY_COUNTY_ZIPS, FOOD_PLACES } from "../src/data/albany-food";
+import { VEGGIE_MOBILE_STOPS, VEGGIE_SCHEDULE_URL } from "../src/data/albany-food-veggie";
 import { formatWhen, matchFood, nyParts, openingsFor, zonedDate } from "../src/lib/food-week";
 
 const now = zonedDate(2026, 9, 30, 20, 15);
@@ -69,6 +70,33 @@ const arbor = matchFood("Arbor Hill", now);
 if (!arbor.ok || !arbor.places.some((p) => p.place.zip === "12210" || p.place.zip === "12207")) {
   throw new Error("arbor hill mismatch");
 }
+
+
+// Capital Roots Veggie Mobile: days come from Capital Roots' own 2026 schedule, not the map's conflicting layers.
+if (VEGGIE_MOBILE_STOPS.length !== 14) throw new Error("expected 14 Albany County Veggie Mobile stops, got " + VEGGIE_MOBILE_STOPS.length);
+for (const v of VEGGIE_MOBILE_STOPS) {
+  if (!FOOD_PLACES.some((p) => p.id === v.id)) throw new Error("veggie stop not in FOOD_PLACES: " + v.id);
+  if (!ALBANY_COUNTY_ZIPS.has(v.zip)) throw new Error("veggie stop outside Albany County: " + v.id);
+  if (v.sourceUrl !== VEGGIE_SCHEDULE_URL) throw new Error("veggie stop must cite the Capital Roots schedule: " + v.id);
+  if (!/^Low-cost produce market, not free/.test(v.note)) throw new Error("veggie stop must say it is a market, not free: " + v.id);
+  if (v.slots.length !== 1 || !v.slots[0].end) throw new Error("veggie stop needs one slot with a published end: " + v.id);
+  if (/Troy|Schenectady|Rensselaer|Waterford/.test(v.city)) throw new Error("non-Albany County city: " + v.id);
+}
+const throughNextWed = zonedDate(2026, 10, 8, 23, 59);
+const drake = openingsFor(FOOD_PLACES.find((p) => p.id === "vm-drake-idlewild")!, now, throughNextWed).map((o) => formatWhen(o));
+if (drake.length !== 1 || !drake[0].startsWith("Wednesday, Oct 7") || !drake[0].includes("2pm–2:30pm")) {
+  throw new Error("Drake/Idlewild is Wednesday 2–2:30pm per Capital Roots (map said Tuesday): " + drake.join(" | "));
+}
+const hanratta = names("vm-eugene-hanratta");
+if (hanratta.length !== 1 || !hanratta[0].startsWith("Friday, Oct 2") || !hanratta[0].includes("12:30pm–1:15pm")) {
+  throw new Error("Eugene Hanratta is Friday 12:30–1:15 per Capital Roots (map said Thursday): " + hanratta.join(" | "));
+}
+const library = names("vm-watervliet-library");
+if (library.length !== 1 || !library[0].startsWith("Thursday, Oct 1") || !library[0].includes("12:30pm–1:30pm")) {
+  throw new Error("Watervliet library is Thursday 12:30–1:30 per Capital Roots: " + library.join(" | "));
+}
+const uscri = names("vm-uscri");
+if (uscri.length !== 0) throw new Error("USCRI is Tuesday only; nothing left Wed–Sun: " + uscri.join(" | "));
 
 console.log("week", south.weekLabel);
 for (const m of south.places) {

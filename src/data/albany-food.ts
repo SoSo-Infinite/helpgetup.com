@@ -1,6 +1,7 @@
 import { FOOD_PLACES_A } from "./albany-food-a";
 import { FOOD_PLACES_B } from "./albany-food-b";
 import { FOOD_PLACES_C } from "./albany-food-c";
+import { VEGGIE_MOBILE_STOPS } from "./albany-food-veggie";
 import { VERIFIED } from "./verified";
 
 /**
@@ -14,6 +15,8 @@ import { VERIFIED } from "./verified";
  * (scripts/verify-food-sources.mjs): Connect Center and Purple Pantry hours
  * updated, Albany Free School fridge removed (no longer on the map),
  * Redemption Church pantry and two 24/7 fridges added.
+ * Capital Roots Veggie Mobile stops come from Capital Roots' own 2026 schedule PDF
+ * (src/data/albany-food-veggie.ts), not the map, because the map's two Veggie Mobile layers disagree.
  * Rows are copied from those sources. A stop that is not on them is not listed.
  */
 
@@ -67,6 +70,7 @@ export const FOOD_PLACES: FoodPlace[] = [
   ...FOOD_PLACES_A,
   ...FOOD_PLACES_B,
   ...FOOD_PLACES_C,
+  ...VEGGIE_MOBILE_STOPS,
 ].map((place) => ({ ...place, verifiedOn: VERIFIED[place.id]?.on }));
 
 /**
