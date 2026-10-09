@@ -5,7 +5,11 @@
  * The food list lives inside the page bundle, so once the page has loaded once,
  * the whole walk (ZIP lookup, this week's times, Maps/calendar links) works offline.
  */
-const VERSION = "hgu-offline-v1";
+// Bump VERSION when the food list or page shell changes in a way old offline copies must not keep.
+// activate deletes every other cache, so a bump drops old pages and assets.
+const VERSION = "hgu-offline-v2";
+// Content-hashed /_next/static files pile up across deploys under one VERSION; keep the newest N.
+const MAX_ENTRIES = 120;
 const SHELL = ["/", "/icon.svg", "/helpgetup-logo.png", "/helpgetup-mark.png"];
 
 self.addEventListener("install", (event) => {
@@ -37,7 +41,9 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          if (res.ok) {
+          // Only the home page is saved as the offline copy. Other paths (future pages, redirects)
+          // must not overwrite it.
+          if (res.ok && url.pathname === "/" && !res.redirected) {
             const copy = res.clone();
             caches.open(VERSION).then((c) => c.put("/", copy));
           }
@@ -54,17 +60,40 @@ self.addEventListener("fetch", (event) => {
     url.pathname === "/manifest.webmanifest";
   if (!cacheable) return;
 
+  // Hashed build files never change: cache first. Icons, logos, manifest keep their names
+  // across deploys: serve the saved copy but refresh it in the background (stale-while-revalidate),
+  // so a changed file is picked up on the next visit instead of being pinned forever.
+  const hashed = url.pathname.startsWith("/_next/static/");
   event.respondWith(
-    caches.match(req).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(VERSION).then((c) => c.put(req, copy));
-          }
-          return res;
-        }),
+    caches.open(VERSION).then((cache) =>
+      cache.match(req).then((hit) => {
+        const refresh = () =>
+          fetch(req).then((res) => {
+            if (res.ok) {
+              cache.put(req, res.clone()).then(() => trim(cache));
+            }
+            return res;
+          });
+        if (hit) {
+          if (!hashed) event.waitUntil(refresh().catch(() => {}));
+          return hit;
+        }
+        return refresh();
+      }),
     ),
   );
 });
+
+function trim(cache) {
+  return cache.keys().then((keys) => {
+    const extra = keys.length - MAX_ENTRIES;
+    if (extra <= 0) return;
+    // Oldest entries first; never drop the saved home page.
+    return Promise.all(
+      keys
+        .filter((k) => new URL(k.url).pathname !== "/")
+        .slice(0, extra)
+        .map((k) => cache.delete(k)),
+    );
+  });
+}
