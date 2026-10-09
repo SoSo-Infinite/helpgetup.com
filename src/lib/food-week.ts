@@ -114,7 +114,7 @@ function endOfSunday(now: Date): Date {
 }
 
 export function openingsFor(
-  place: FoodPlace,
+  place: Pick<FoodPlace, "slots">,
   now: Date,
   through: Date,
 ): Opening[] {
@@ -265,7 +265,7 @@ export function resolvePlaceQuery(
   return { error: "outside", detail: text };
 }
 
-function distance(placeZip: string, targets: string[]): number {
+export function distance(placeZip: string, targets: string[]): number {
   if (targets.includes(placeZip)) return 0;
   for (const z of targets) {
     if ((NEAR[z] || []).includes(placeZip)) return 1;
