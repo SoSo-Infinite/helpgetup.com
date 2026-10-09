@@ -105,17 +105,14 @@ export const FOOD_PLACES_A: FoodPlace[] = [
       city: "Cohoes",
       zip: "12047",
       phone: "(518) 687-1999",
-      hoursRaw:
-        "Tuesday 10am-2pm, Wednesdays 5:00pm-7:30pm, Thursday 10am-2pm, Sunday 9am-12pm- *Closed 1st Sunday of each month*",
+      hoursRaw: "Tuesdays and Thursdays 10am-2pm, Wednesdays 5:30pm-7:30pm",
       note: "Walk-ins okay, up to twice a month.",
       sourceName: MAP,
       sourceUrl: MAP_URL,
-      sourceUpdated: "2026-08-17",
+      sourceUpdated: "2026-10-01",
       slots: [
-        { weekdays: [2], start: "10:00", end: "14:00" },
-        { weekdays: [3], start: "17:00", end: "19:30" },
-        { weekdays: [4], start: "10:00", end: "14:00" },
-        { weekdays: [0], start: "09:00", end: "12:00", exceptNth: [1] },
+        { weekdays: [2, 4], start: "10:00", end: "14:00" },
+        { weekdays: [3], start: "17:30", end: "19:30" },
       ],
     },
   {

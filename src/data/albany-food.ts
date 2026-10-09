@@ -1,6 +1,7 @@
 import { FOOD_PLACES_A } from "./albany-food-a";
 import { FOOD_PLACES_B } from "./albany-food-b";
 import { FOOD_PLACES_C } from "./albany-food-c";
+import { VERIFIED } from "./verified";
 
 /**
  * Albany County food rows for the demo.
@@ -9,6 +10,10 @@ import { FOOD_PLACES_C } from "./albany-food-c";
  * If a source did not publish an end time, `end` is null.
  * Checked against the Food Connect map (map.thefoodpantries.org) on 2026-09-30
  * and the February 2026 Albany County resource flyer where noted.
+ * Re-checked row by row against the map's published data on 2026-10-09
+ * (scripts/verify-food-sources.mjs): Connect Center and Purple Pantry hours
+ * updated, Albany Free School fridge removed (no longer on the map),
+ * Redemption Church pantry and two 24/7 fridges added.
  * Rows are copied from those sources. A stop that is not on them is not listed.
  */
 
@@ -47,8 +52,12 @@ export type FoodPlace = {
   /** ISO date the source says the row was last updated, or the flyer month */
   sourceUpdated: string;
   slots: SlotRule[];
-  /** true when the source published no hours */
+  /** true when the source published no hours (or no schedule the week view can use) */
   hoursUnknown?: boolean;
+  /** true when the source says the stop is open 24/7 (community fridges) */
+  alwaysOpen?: boolean;
+  /** ISO date HelpGetUp last compared this row to its source and found it matching (src/data/verified.ts) */
+  verifiedOn?: string;
 };
 
 const FLYER_URL =
@@ -58,7 +67,16 @@ export const FOOD_PLACES: FoodPlace[] = [
   ...FOOD_PLACES_A,
   ...FOOD_PLACES_B,
   ...FOOD_PLACES_C,
-];
+].map((place) => ({ ...place, verifiedOn: VERIFIED[place.id]?.on }));
+
+/** Newest date any row was checked against its source. Shown as the list's "last checked" stamp. */
+export const LIST_CHECKED_ON: string = FOOD_PLACES.reduce(
+  (latest, p) => (p.verifiedOn && p.verifiedOn > latest ? p.verifiedOn : latest),
+  "",
+);
+
+/** A source row this old (months) gets a "call before you go" flag. */
+export const STALE_AFTER_MONTHS = 12;
 
 export const OFFICIAL = {
   americaGov: {

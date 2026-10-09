@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:food": "npx -y tsx scripts/check-food-week.ts",
+    "verify:sources": "npx -y tsx scripts/verify-food-sources.ts --out .source-check.json"
   },
   "dependencies": {
     "next": "16.3.6",
