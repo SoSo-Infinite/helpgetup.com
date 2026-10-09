@@ -132,6 +132,37 @@ export const WALK_TEXT = {
     sourceUpdated: "Source updated",
     lastVerified: "Last verified by HelpGetUp",
     notRechecked: " Not yet re-checked by HelpGetUp.",
+    // Senior (60+) meals — shown only when the person says they are 60+ or taps to show them
+    seniorToggle: "I’m 60 or older (or married to someone who is). Also show senior meal sites.",
+    seniorToggleHelp: "Only changes this list. Not saved, not sent.",
+    seniorShow: "60 or older? Show senior meal sites",
+    seniorHide: "Hide senior meal sites",
+    seniorTitle: "60 and older: senior meals",
+    seniorIntro:
+      "Hot meals at Albany County senior dining sites, run with the county Department for Aging. These are only for people 60+ and their spouses, and you reserve ahead.",
+    seniorWho: "Who can go:",
+    seniorCost: "Cost:",
+    seniorChecked: "Senior sites last checked against their sources on",
+    seniorCallFirst: "60+, call first. Meal days and times are not published.",
+    seniorNext: "Next published meal:",
+    seniorPublished: "Published days and times: ",
+    seniorReserve: "To reserve:",
+    seniorCall: "Call to reserve:",
+    seniorPhoneFrom: (from: string) => `Number from the ${from}.`,
+    seniorSay:
+      "What to say: “I’m 60 or older and I’d like to reserve a meal. What day and time is it, and do I need to register first?”",
+    seniorHdmTitle: "Can’t get out? Home-delivered meals",
+    seniorHdmCall: (name: string) => `Call ${name} for an intake:`,
+    seniorHdmAlso: "Also:",
+    seniorAll: "All 24 senior dining sites and their phone numbers:",
+    seniorSources: "Sources:",
+    seniorClosedNote: "Sites can close on holidays. Reserve by phone before you go.",
+    seniorWhoText:
+      "Age 60 or older, plus the spouse of an eligible person at any age (Albany County Department for Aging). LifePath: adults under 60 or living outside Albany County may join as paying guests.",
+    seniorCostText:
+      "Suggested contribution $3 a meal. Not required; no one is turned away for not paying (county Nutrition Services page).",
+    seniorHdmText:
+      "For people 60+ who are homebound. The county lists three conditions, all required: hurt, ill or frail; no help from family, friends or neighbors; and unable to make meals. Family, friends or agencies can refer.",
   },
   es: {
     langToggle: "English",
@@ -254,6 +285,37 @@ export const WALK_TEXT = {
     sourceUpdated: "Fuente actualizada el",
     lastVerified: "Revisado por HelpGetUp el",
     notRechecked: " HelpGetUp todavía no lo ha vuelto a revisar.",
+    seniorToggle:
+      "Tengo 60 años o más (o mi cónyuge los tiene). Mostrar también comedores para personas mayores.",
+    seniorToggleHelp: "Solo cambia esta lista. No se guarda ni se envía.",
+    seniorShow: "¿Tiene 60 años o más? Ver comedores para personas mayores",
+    seniorHide: "Ocultar comedores para personas mayores",
+    seniorTitle: "60 años o más: comidas para personas mayores",
+    seniorIntro:
+      "Comidas calientes en comedores para personas mayores del condado de Albany, con el Departamento para Personas Mayores del condado. Son solo para personas de 60 años o más y sus cónyuges, y hay que reservar antes.",
+    seniorWho: "Quién puede ir:",
+    seniorCost: "Costo:",
+    seniorChecked: "Comedores para mayores revisados con sus fuentes el",
+    seniorCallFirst: "60+, llame primero. No publicaron los días ni la hora de la comida.",
+    seniorNext: "Próxima comida publicada:",
+    seniorPublished: "Días y horas publicados (en inglés): ",
+    seniorReserve: "Para reservar (en inglés):",
+    seniorCall: "Llame para reservar:",
+    seniorPhoneFrom: (from: string) => `Número según: ${from} (en inglés).`,
+    seniorSay:
+      "Qué decir: “Tengo 60 años o más y quiero reservar una comida. ¿Qué día y a qué hora es, y tengo que inscribirme antes?” Si lo necesita, pregunte: “Do you have someone who speaks Spanish?”",
+    seniorHdmTitle: "¿No puede salir? Comidas a domicilio",
+    seniorHdmCall: (name: string) => `Llame a ${name} para una evaluación:`,
+    seniorHdmAlso: "También:",
+    seniorAll: "Los 24 comedores para personas mayores y sus teléfonos:",
+    seniorSources: "Fuentes:",
+    seniorClosedNote: "Los comedores pueden cerrar en días feriados. Reserve por teléfono antes de ir.",
+    seniorWhoText:
+      "Personas de 60 años o más y su cónyuge, de cualquier edad (Departamento para Personas Mayores del condado de Albany). LifePath: los menores de 60 años o quienes viven fuera del condado pueden ir como invitados pagando.",
+    seniorCostText:
+      "Contribución sugerida de $3 por comida. No es obligatoria; a nadie se le niega la comida por no pagar (página de nutrición del condado).",
+    seniorHdmText:
+      "Para personas de 60 años o más que no pueden salir de casa. El condado pide las tres cosas: estar herido, enfermo o débil; no tener ayuda de familia, amigos o vecinos; y no poder preparar comidas. La familia, amigos o agencias pueden hacer la referencia.",
   },
 } satisfies Record<WalkLang, Record<string, unknown>>;
 

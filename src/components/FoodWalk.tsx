@@ -24,6 +24,8 @@ import {
   type WalkLang,
 } from "@/lib/food-week";
 import { WALK_TEXT, type WalkText } from "@/lib/walk-text";
+import { SENIOR_COUNTY_URL, SENIOR_PROGRAM, type SeniorMealSite } from "@/data/albany-senior-meals";
+import { matchSeniorMeals } from "@/lib/senior-meals";
 
 type Need = "tonight" | "snap" | "both";
 type SnapKind = "apply" | "renew" | "unsure";
@@ -66,6 +68,8 @@ export default function FoodWalk() {
   const [foodCheck, setFoodCheck] = useState<Check>("");
   const [foodLeft, setFoodLeft] = useState("");
   const [foodSaved, setFoodSaved] = useState(false);
+  // 60+ meal sites show only when the person says so (checkbox) or taps to see them. Not stored.
+  const [senior, setSenior] = useState(false);
   const t: WalkText = WALK_TEXT[lang];
 
   const results = useMemo(
@@ -86,6 +90,7 @@ export default function FoodWalk() {
     setFoodCheck("");
     setFoodLeft("");
     setFoodSaved(false);
+    setSenior(false);
   }
 
   function chooseNeed(value: Need) {
@@ -228,6 +233,19 @@ export default function FoodWalk() {
                   maxLength={40}
                   required
                 />
+                <label className="check-row" htmlFor="senior-60">
+                  <input
+                    id="senior-60"
+                    type="checkbox"
+                    checked={senior}
+                    onChange={(e) => setSenior(e.target.checked)}
+                    aria-describedby="senior-60-help"
+                  />
+                  <span>{t.seniorToggle}</span>
+                </label>
+                <p className="walk-help fine" id="senior-60-help">
+                  {t.seniorToggleHelp}
+                </p>
                 <button className="btn btn-primary" type="submit">
                   {t.showWeek}
                 </button>
@@ -245,6 +263,8 @@ export default function FoodWalk() {
               <Options
                 query={submitted}
                 result={results}
+                senior={senior}
+                onSenior={setSenior}
                 onPick={(match) => {
                   setPicked(match);
                   setStep("script");
@@ -359,11 +379,15 @@ function SnapNext({ kind, onContinue }: { kind: SnapKind | ""; onContinue: () =>
 function Options({
   query,
   result,
+  senior,
+  onSenior,
   onPick,
   onBack,
 }: {
   query: string;
   result: ReturnType<typeof matchFood>;
+  senior: boolean;
+  onSenior: (v: boolean) => void;
   onPick: (match: PlaceMatch) => void;
   onBack: () => void;
 }) {
@@ -469,6 +493,7 @@ function Options({
           ))}
         </ul>
       )}
+      <SeniorMeals zips={result.zips} show={senior} onShow={onSenior} />
       <p className="walk-help">
         {t.fullMap}{" "}
         <a href={OFFICIAL.map.url} target="_blank" rel="noopener noreferrer">
@@ -635,5 +660,155 @@ function SourceLine({ place }: { place: FoodPlace }) {
         )}
       </p>
     </>
+  );
+}
+
+/** Separate, clearly labeled 60+ group. Shown only after the person says they are 60+ or taps to show it. */
+function SeniorMeals({ zips, show, onShow }: { zips: string[]; show: boolean; onShow: (v: boolean) => void }) {
+  const { lang, t } = useLang();
+  const matches = useMemo(() => (show ? matchSeniorMeals(zips, new Date()) : []), [show, zips]);
+  if (!show) {
+    return (
+      <p className="senior-reveal">
+        <button
+          type="button"
+          className="btn btn-ghost"
+          aria-expanded="false"
+          aria-controls="senior-meals"
+          onClick={() => onShow(true)}
+        >
+          {t.seniorShow}
+        </button>
+      </p>
+    );
+  }
+  const hdm = SENIOR_PROGRAM.homeDelivered;
+  return (
+    <section className="senior-section" id="senior-meals" aria-labelledby="senior-meals-title">
+      <h3 className="senior-title" id="senior-meals-title">
+        {t.seniorTitle}
+      </h3>
+      <p className="walk-help">{t.seniorIntro}</p>
+      <p className="walk-help fine">
+        <strong>{t.seniorWho}</strong> {t.seniorWhoText}
+      </p>
+      <p className="walk-help fine">
+        <strong>{t.seniorCost}</strong> {t.seniorCostText}
+      </p>
+      <p className="checked-stamp">
+        <span aria-hidden="true">✓</span>
+        <span>
+          {t.seniorChecked}{" "}
+          <time dateTime={SENIOR_PROGRAM.checkedOn}>{formatIsoDate(SENIOR_PROGRAM.checkedOn, lang)}</time>.
+        </span>
+      </p>
+      <ul className="place-list">
+        {matches.map((m) => (
+          <li key={m.site.id}>
+            <SeniorCard site={m.site} when={m.opening ? formatWhen(m.opening, lang) : ""} />
+          </li>
+        ))}
+      </ul>
+      <p className="walk-help fine">{t.seniorClosedNote}</p>
+      <div className="senior-hdm">
+        <h4>{t.seniorHdmTitle}</h4>
+        <p className="walk-help fine">{t.seniorHdmText}</p>
+        <p className="senior-call">
+          {t.seniorHdmCall(hdm.phoneName)} <a href={phoneHref(hdm.phone)}>{formatPhone(hdm.phone)}</a>
+        </p>
+        <p className="walk-help fine">
+          {t.seniorHdmAlso} <span lang="en">{hdm.lifePathNote}</span>{" "}
+          <a href={phoneHref(hdm.lifePathPhone)}>{formatPhone(hdm.lifePathPhone)}</a>
+        </p>
+        <p className="source-line">
+          {t.seniorSources}{" "}
+          <a href={hdm.url} target="_blank" rel="noopener noreferrer">
+            Albany County — Home Delivered Meals
+          </a>
+          {" · "}
+          <a href={hdm.lifePathUrl} target="_blank" rel="noopener noreferrer">
+            LifePath — Meals on Wheels
+          </a>
+        </p>
+      </div>
+      <p className="walk-help">
+        {t.seniorAll}{" "}
+        <a href={SENIOR_COUNTY_URL} target="_blank" rel="noopener noreferrer">
+          {SENIOR_PROGRAM.countyName}
+        </a>{" "}
+        · <a href={phoneHref(SENIOR_PROGRAM.countyPhone)}>{formatPhone(SENIOR_PROGRAM.countyPhone)}</a>
+      </p>
+      <button
+        type="button"
+        className="text-btn"
+        aria-expanded="true"
+        aria-controls="senior-meals"
+        onClick={() => onShow(false)}
+      >
+        {t.seniorHide}
+      </button>
+    </section>
+  );
+}
+
+function SeniorCard({ site, when }: { site: SeniorMealSite; when: string }) {
+  const { lang, t } = useLang();
+  return (
+    <article className="place-card senior-card" data-senior-id={site.id}>
+      <p className="senior-badge">60+</p>
+      <h4 lang="en">{site.name}</h4>
+      <p className="when">{when ? `${t.seniorNext} ${when}` : t.seniorCallFirst}</p>
+      <p>
+        {site.address}, {site.city} {site.zip}
+        {" · "}
+        <a href={mapsHref(site)} target="_blank" rel="noopener noreferrer">
+          {t.openInMaps}
+        </a>
+      </p>
+      <p className="senior-call">
+        {t.seniorCall} <a href={phoneHref(site.phone)}>{formatPhone(site.phone)}</a>
+      </p>
+      {site.hoursRaw ? (
+        <p className="hours-raw">
+          <span>{t.seniorPublished}</span>
+          <span lang="en">{site.hoursRaw}</span>
+        </p>
+      ) : null}
+      <p className="walk-help fine">
+        {t.seniorReserve} <span lang="en">{site.reserve}</span>
+      </p>
+      {site.note ? (
+        <p className="walk-help fine">
+          {t.fromSource} <span lang="en">{site.note}</span>
+        </p>
+      ) : null}
+      <p className="say">{t.seniorSay}</p>
+      <p className="source-line">
+        {t.seniorSources}{" "}
+        {site.sources.map((src, i) => (
+          <span key={src.url}>
+            {i ? " · " : ""}
+            <a href={src.url} target="_blank" rel="noopener noreferrer">
+              {src.name}
+            </a>
+            {src.updated ? (
+              <>
+                {" "}
+                ({t.sourceUpdated.toLowerCase()} <time dateTime={src.updated}>{formatIsoDate(src.updated, lang)}</time>)
+              </>
+            ) : null}
+          </span>
+        ))}
+        . {t.seniorPhoneFrom(site.phoneFrom)}
+        {site.verifiedOn ? (
+          <>
+            {" "}
+            {t.lastVerified} <time dateTime={site.verifiedOn}>{formatIsoDate(site.verifiedOn, lang)}</time>.
+          </>
+        ) : (
+          t.notRechecked
+        )}
+      </p>
+    </article>
   );
 }

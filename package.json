@@ -9,7 +9,8 @@
     "lint": "eslint",
     "check:food": "npx -y tsx scripts/check-food-week.ts",
     "verify:sources": "npx -y tsx scripts/verify-food-sources.ts --out .source-check.json",
-    "check:links": "npx -y tsx scripts/check-links.ts"
+    "check:links": "npx -y tsx scripts/check-links.ts",
+    "check:seniors": "npx -y tsx scripts/check-senior-meals.ts"
   },
   "dependencies": {
     "next": "16.3.6",
