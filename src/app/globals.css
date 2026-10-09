@@ -969,3 +969,10 @@ ul.examples {
 .fl-jump a { text-decoration: none; }
 .fl-crumbs a { text-decoration: underline; text-underline-offset: 2px; }
 .fl a[href^="tel:"] { white-space: nowrap; }
+
+/* Spanish draft notice 2026-10-09 (needs native review) */
+.draft-notice {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: #5a5a5a;
+}

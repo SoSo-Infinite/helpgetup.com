@@ -2,7 +2,8 @@ import type { WalkLang } from "@/lib/food-week";
 
 /**
  * Every visible string in the food walk, in English and Spanish.
- * Spanish is a first draft by HelpGetUp; have a native speaker review it before it ships.
+ * NEEDS NATIVE REVIEW: Spanish is a first draft by HelpGetUp; have a native speaker review it before it ships.
+ * The Spanish view shows `draftNotice` (marked data-needs-native-review) until that review is done.
  * Source rows (pantry names, published hours, notes) stay in English as published,
  * and the Spanish view says so.
  */
@@ -132,6 +133,9 @@ export const WALK_TEXT = {
     sourceUpdated: "Source updated",
     lastVerified: "Last verified by HelpGetUp",
     notRechecked: " Not yet re-checked by HelpGetUp.",
+    draftNotice: "",
+    unconfirmed:
+      "Could not confirm: no current public source lists this stop (only an older flyer). Call before you go.",
     // Senior (60+) meals — shown only when the person says they are 60+ or taps to show them
     seniorToggle: "I’m 60 or older (or married to someone who is). Also show senior meal sites.",
     seniorToggleHelp: "Only changes this list. Not saved, not sent.",
@@ -285,6 +289,9 @@ export const WALK_TEXT = {
     sourceUpdated: "Fuente actualizada el",
     lastVerified: "Revisado por HelpGetUp el",
     notRechecked: " HelpGetUp todavía no lo ha vuelto a revisar.",
+    unconfirmed:
+      "No se pudo confirmar: ninguna fuente pública actual incluye este lugar (solo un folleto anterior). Llame antes de ir.",
+    draftNotice: "Traducción preliminar: falta la revisión de un hablante nativo.",
     seniorToggle:
       "Tengo 60 años o más (o mi cónyuge los tiene). Mostrar también comedores para personas mayores.",
     seniorToggleHelp: "Solo cambia esta lista. No se guarda ni se envía.",

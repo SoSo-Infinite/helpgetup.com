@@ -160,6 +160,11 @@ export default function FoodWalk() {
           >
             {t.langToggle}
           </button>
+          {lang === "es" ? (
+            <p className="draft-notice" data-needs-native-review="true">
+              {t.draftNotice}
+            </p>
+          ) : null}
         </div>
         <h1>{t.h1}</h1>
         {step === "start" ? (
@@ -680,6 +685,7 @@ function SourceLine({ place }: { place: FoodPlace }) {
   const stale = isStaleSource(place);
   return (
     <>
+      {place.unconfirmed ? <p className="stale-flag">{t.unconfirmed}</p> : null}
       {stale ? <p className="stale-flag">{t.olderListing(formatIsoDate(place.sourceUpdated, lang))}</p> : null}
       <p className="source-line">
         {t.source}{" "}

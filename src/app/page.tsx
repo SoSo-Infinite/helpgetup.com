@@ -23,7 +23,7 @@ export default function Home() {
       <SkipLink />
       <header className="site-header">
         <div className="wrap header-inner">
-          <a className="brand-lockup" href="#top" aria-label="HelpGetUp home">
+          <a className="brand-lockup" href="#top">
             <Image
               src="/helpgetup-mark.png"
               alt=""

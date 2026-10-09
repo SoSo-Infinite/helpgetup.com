@@ -61,6 +61,11 @@ export type FoodPlace = {
   alwaysOpen?: boolean;
   /** ISO date HelpGetUp last compared this row to its source and found it matching (src/data/verified.ts) */
   verifiedOn?: string;
+  /**
+   * true when no current public source could confirm this row (it comes only from an older flyer
+   * that a script cannot re-read). The walk and the list show a "could not confirm" flag.
+   */
+  unconfirmed?: boolean;
 };
 
 const FLYER_URL =
@@ -71,7 +76,11 @@ export const FOOD_PLACES: FoodPlace[] = [
   ...FOOD_PLACES_B,
   ...FOOD_PLACES_C,
   ...VEGGIE_MOBILE_STOPS,
-].map((place) => ({ ...place, verifiedOn: VERIFIED[place.id]?.on }));
+].map((place) => ({
+  ...place,
+  // An unconfirmed row never shows a "checked" date: there was nothing current to check it against.
+  verifiedOn: place.unconfirmed ? undefined : VERIFIED[place.id]?.on,
+}));
 
 /**
  * Oldest per-row check date, shown as the list's "last checked" stamp. Using the oldest keeps the
@@ -79,9 +88,10 @@ export const FOOD_PLACES: FoodPlace[] = [
  * never-checked row holds the whole list's stamp back instead of hiding behind today's date.
  * Empty when any row has never been checked.
  */
-export const LIST_CHECKED_ON: string = FOOD_PLACES.some((p) => !p.verifiedOn)
+const CHECKABLE = FOOD_PLACES.filter((p) => !p.unconfirmed);
+export const LIST_CHECKED_ON: string = CHECKABLE.some((p) => !p.verifiedOn)
   ? ""
-  : FOOD_PLACES.reduce(
+  : CHECKABLE.reduce(
       (oldest, p) => (!oldest || (p.verifiedOn as string) < oldest ? (p.verifiedOn as string) : oldest),
       "",
     );

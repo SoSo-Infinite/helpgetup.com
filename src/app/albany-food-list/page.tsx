@@ -75,6 +75,11 @@ function FoodRow({ p }: { p: FoodPlace }) {
       <p>
         <strong>Hours as published:</strong> {p.hoursRaw || (p.alwaysOpen ? "24/7" : "Not published. Call first.")}
       </p>
+      {p.unconfirmed ? (
+        <p className="stale-flag">
+          Could not confirm: no current public source lists this stop (only an older flyer). Call before you go.
+        </p>
+      ) : null}
       {p.note ? <p className="fl-note">{p.note}</p> : null}
       <p className="fl-src">
         Source:{" "}

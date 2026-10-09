@@ -330,6 +330,7 @@ export const FOOD_PLACES_A: FoodPlace[] = [
       sourceUrl: FLYER_URL,
       sourceUpdated: "2026-02-01",
       slots: [{ weekdays: [4], start: "13:00", end: "15:30", nth: [3] }],
+      unconfirmed: true,
     },
   {
       id: "ccrm-meals",
