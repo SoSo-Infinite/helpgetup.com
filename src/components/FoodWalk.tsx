@@ -328,7 +328,7 @@ function SnapNext({ kind, onContinue }: { kind: SnapKind | ""; onContinue: () =>
             {OFFICIAL.hotline.name}. {OFFICIAL.hotline.hours}. You call. We do not.
           </p>
           <p>
-            In person: {OFFICIAL.hotline.address}.{" "}
+            Office address on the county page: {OFFICIAL.hotline.address}.{" "}
             <a href={OFFICIAL.hotline.url} target="_blank" rel="noopener noreferrer">
               {OFFICIAL.hotline.pageName}
             </a>
@@ -404,8 +404,11 @@ function Options({
       </p>
       {LIST_CHECKED_ON ? (
         <p className="checked-stamp">
-          <span aria-hidden="true">✓</span> List last checked against its sources on{" "}
-          <time dateTime={LIST_CHECKED_ON}>{formatIsoDate(LIST_CHECKED_ON)}</time>.
+          <span aria-hidden="true">✓</span>
+          <span>
+            List last checked against its sources on{" "}
+            <time dateTime={LIST_CHECKED_ON}>{formatIsoDate(LIST_CHECKED_ON)}</time>.
+          </span>
         </p>
       ) : null}
       {result.places.length === 0 ? (

@@ -704,7 +704,7 @@ img {
 /* Source freshness 2026-10-09: list stamp + older-listing flag */
 .checked-stamp {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.4rem;
   margin: 0 0 0.9rem;
   padding: 0.35rem 0.75rem;
@@ -729,5 +729,29 @@ img {
   .checked-stamp,
   .stale-flag {
     border: 2px solid currentColor;
+  }
+}
+
+/* Offline banner 2026-10-09 */
+.offline-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
+  background: rgba(11, 31, 58, 0.92);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .offline-banner {
+    background: var(--navy);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }

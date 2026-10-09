@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import OfflineReady from "@/components/OfflineReady";
 
 export const metadata: Metadata = {
   title: "HelpGetUp — Take the next step.",
@@ -57,6 +58,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <OfflineReady />
         {children}
       </body>
     </html>
