@@ -380,3 +380,91 @@ export function phoneHref(raw: string): string {
   const d = digits.length === 11 && digits.startsWith("1") ? digits : digits.length === 10 ? `1${digits}` : "";
   return d ? `tel:+${d}` : `tel:${digits}`;
 }
+
+/**
+ * Map search link for a stop. Uses only the published address; nothing about
+ * the person is added. Apple devices open Apple Maps, everything else Google Maps
+ * (both accept a plain address query).
+ */
+export function mapsHref(place: Pick<FoodPlace, "name" | "address" | "city" | "zip">): string {
+  const q = `${place.name}, ${place.address}, ${place.city}, NY ${place.zip}`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+
+function icsStamp(d: Date): string {
+  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+}
+
+function icsEscape(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/([,;])/g, "\\$1");
+}
+
+/**
+ * One-event calendar file for the picked opening, built in the browser.
+ * No personal data: only the stop's published name, address, phone, hours and source.
+ * When the source published no end time, the event is 90 minutes and says so.
+ */
+export function icsFor(place: FoodPlace, opening: Opening, now: Date = new Date()): string {
+  const start = opening.date;
+  const endMinutes = opening.end ? minutes(opening.end) - minutes(opening.start) : 90;
+  const end = new Date(start.getTime() + Math.max(endMinutes, 15) * 60 * 1000);
+  const desc = [
+    opening.end ? "" : "End time not published by the source; 90 minutes is a placeholder.",
+    `Published hours: ${place.hoursRaw || "not listed"}`,
+    `Phone: ${formatPhone(place.phone)} (call to confirm before you go)`,
+    `Source: ${place.sourceName} ${place.sourceUrl}`,
+    "From helpgetup.com. HelpGetUp did not call or reserve anything.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//HelpGetUp//Food walk//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${place.id}-${icsStamp(start)}@helpgetup.com`,
+    `DTSTAMP:${icsStamp(now)}`,
+    `DTSTART:${icsStamp(start)}`,
+    `DTEND:${icsStamp(end)}`,
+    `SUMMARY:${icsEscape(`Food: ${place.name}`)}`,
+    `LOCATION:${icsEscape(`${place.address}, ${place.city}, NY ${place.zip}`)}`,
+    `DESCRIPTION:${icsEscape(desc)}`,
+    "BEGIN:VALARM",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Food stop in 1 hour",
+    "TRIGGER:-PT1H",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ];
+  return lines.map(foldIcsLine).join("\r\n") + "\r\n";
+}
+
+/** RFC 5545 line folding: max 75 octets per line, continuation lines start with a space. */
+function foldIcsLine(line: string): string {
+  const enc = new TextEncoder();
+  if (enc.encode(line).length <= 75) return line;
+  const parts: string[] = [];
+  let cur = "";
+  for (const ch of line) {
+    const limit = parts.length === 0 ? 75 : 74;
+    if (enc.encode(cur + ch).length > limit) {
+      parts.push(cur);
+      cur = ch;
+    } else {
+      cur += ch;
+    }
+  }
+  parts.push(cur);
+  return parts.join("\r\n ");
+}
+
+export function icsHref(place: FoodPlace, opening: Opening): string {
+  return `data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(place, opening))}`;
+}
+
+export function icsFileName(place: FoodPlace): string {
+  return `helpgetup-${place.id}.ics`;
+}

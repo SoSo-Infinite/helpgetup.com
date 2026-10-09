@@ -1,0 +1,24 @@
+# HelpGetUp
+
+> HelpGetUp (helpgetup.com) is an early-stage, free guide for people stuck on food in Albany County, New York. It gives one clear next step: a sourced pantry, community meal, or produce stop open this week, or the official SNAP / EBT path (NYS myBenefits and the Albany County SNAP hotline). The person decides whether to take the step.
+
+## What the site does
+- Food walk: pick "Hungry tonight", "SNAP / EBT", or "Both"; enter an Albany County ZIP or neighborhood; see stops with published hours this week, closest first.
+- Every stop names its source (the Food Pantries for the Capital District's Food Connect map and the February 2026 Albany County resource flyer) and the date the source was updated.
+- Each stop offers "Open in Maps" and "Add to calendar", built only from the stop's published address and hours.
+
+## What it does not do
+- It does not call, email, fax, or send anything on a person's behalf, and it does not fill out government forms.
+- It does not collect a Social Security number, driver's license, benefits password, or ID photo. The ZIP or neighborhood typed in stays in the browser.
+- It is not an emergency service. In immediate danger, call 911.
+
+## Scope
+- Albany County, NY only. Food only (for now).
+- Hours change; people should confirm by phone or with the Food Pantries referral line before going.
+
+## Pages
+- [Home and food walk](https://helpgetup.com/)
+
+## Official sources it points to
+- [NYS myBenefits](https://mybenefits.ny.gov/)
+- [Food Connect map](https://map.thefoodpantries.org/)

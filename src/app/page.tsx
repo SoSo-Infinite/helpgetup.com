@@ -5,6 +5,9 @@ import WaitlistForm from "@/components/WaitlistForm";
 export default function Home() {
   return (
     <>
+      <a className="skip-link" href="#walk">
+        Skip to the food walk
+      </a>
       <header className="site-header">
         <div className="wrap header-inner">
           <a className="brand-lockup" href="#top" aria-label="HelpGetUp home">

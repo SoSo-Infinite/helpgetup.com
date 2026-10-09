@@ -5,6 +5,9 @@ import { OFFICIAL, type FoodPlace } from "@/data/albany-food";
 import {
   formatPhone,
   formatWhen,
+  icsFileName,
+  icsHref,
+  mapsHref,
   matchFood,
   phoneHref,
   type PlaceMatch,
@@ -412,6 +415,10 @@ function Options({
                 </p>
                 <p>
                   {match.place.address}, {match.place.city} {match.place.zip}
+                  {" · "}
+                  <a href={mapsHref(match.place)} target="_blank" rel="noopener noreferrer">
+                    Open in Maps
+                  </a>
                 </p>
                 <p>
                   <a href={phoneHref(match.place.phone)}>{formatPhone(match.place.phone)}</a>
@@ -487,6 +494,29 @@ function FoodScript({
         they say so.
       </p>
       {place.note ? <p className="walk-help">From the source: {place.note}</p> : null}
+      <div className="walk-actions">
+        <a
+          className="btn btn-ghost"
+          href={mapsHref(place)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open in Maps
+        </a>
+        {match.opening ? (
+          <a
+            className="btn btn-ghost"
+            href={icsHref(place, match.opening)}
+            download={icsFileName(place)}
+          >
+            Add to calendar
+          </a>
+        ) : null}
+      </div>
+      <p className="walk-help fine">
+        Maps and the calendar file use only this stop’s published address and hours.
+        Nothing about you is added or sent.
+      </p>
       <p className="source-line">
         Source:{" "}
         <a href={place.sourceUrl} target="_blank" rel="noopener noreferrer">
