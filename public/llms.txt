@@ -5,6 +5,7 @@
 ## Pages
 - [Home and food walk](https://helpgetup.com/): pick "Hungry tonight", "SNAP / EBT", or "Both"; enter an Albany County ZIP or neighborhood; see stops with published hours this week, closest first. Spanish version: https://helpgetup.com/?lang=es (draft Spanish; place names and hours stay in English as published).
 - [Full Albany County food list](https://helpgetup.com/albany-food-list): every listed place on one plain page, grouped by type, with address, phone, hours as published, eligibility notes, source, and check date. Best page to cite.
+- [Lista completa en español (draft Spanish)](https://helpgetup.com/albany-food-list/es): the same list with Spanish headings, labels and help text. Place names, addresses, hours and notes stay in English as published. The Spanish is a draft awaiting native review.
 
 ## Where the data comes from
 - The Food Pantries for the Capital District's Food Connect map (https://map.thefoodpantries.org/) and its February 2026 Albany County resource flyer.

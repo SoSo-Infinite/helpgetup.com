@@ -410,8 +410,9 @@ export function phoneHref(raw: string): string {
 
 /**
  * Map search link for a stop. Uses only the published address; nothing about
- * the person is added. Apple devices open Apple Maps, everything else Google Maps
- * (both accept a plain address query).
+ * the person is added. It is a Google Maps search URL on every device: phones with the
+ * Google Maps app open it there, everything else (including iPhones without the app) opens
+ * Google Maps in the browser. It does not hand off to Apple Maps.
  */
 export function mapsHref(place: Pick<FoodPlace, "name" | "address" | "city" | "zip">): string {
   const q = `${place.name}, ${place.address}, ${place.city}, NY ${place.zip}`;

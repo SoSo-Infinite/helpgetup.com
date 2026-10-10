@@ -976,3 +976,18 @@ ul.examples {
   font-size: 0.8rem;
   color: #5a5a5a;
 }
+
+/* List page language switch + Spanish draft notice (build-out-2, 2026-10-09) */
+.fl-lang { margin-left: 0.75rem; }
+.fl-lang a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
+.fl-draft {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--navy-muted);
+  background: #fff;
+}
+@media print { .fl-lang, .fl-draft { display: none !important; } }
