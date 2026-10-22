@@ -32,7 +32,7 @@ export default function WaitlistForm() {
       }
 
       setStatus("ok");
-      setMessage("You're on the list. We'll email you when early access opens.");
+      setMessage("You're on the list. We'll email you when the next part is ready.");
       setEmail("");
     } catch {
       setStatus("err");
@@ -62,8 +62,8 @@ export default function WaitlistForm() {
         {status === "loading" ? "Joining…" : "Join the waitlist"}
       </button>
       <p className="form-note">
-        No spam. One note when early access is ready. Questions:{" "}
-        <a href="mailto:cjames112@gmail.com">cjames112@gmail.com</a>
+        No spam. One note when the next part is ready. Questions:{" "}
+        <a href="mailto:hello@helpgetup.com">hello@helpgetup.com</a>
       </p>
       {status === "ok" && <p className="form-status ok">{message}</p>}
       {status === "err" && <p className="form-status err">{message}</p>}

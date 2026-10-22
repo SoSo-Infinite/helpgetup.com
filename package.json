@@ -15,6 +15,7 @@
     "smoke:voice": "node --import ./tests/support/register.mjs scripts/grok-voice-smoke.ts"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "@vercel/functions": "^3.10.3",
     "next": "16.4.1",
     "react": "19.2.9",

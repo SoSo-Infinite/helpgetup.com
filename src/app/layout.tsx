@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import OfflineReady from "@/components/OfflineReady";
@@ -60,6 +61,7 @@ export default function RootLayout({
         />
         <OfflineReady />
         {children}
+        <Analytics />
       </body>
     </html>
   );

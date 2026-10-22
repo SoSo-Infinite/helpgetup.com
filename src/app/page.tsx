@@ -168,15 +168,14 @@ export default function Home() {
             <div>Take the next step.</div>
           </div>
           <p className="fineprint">
-            Early access / waitlist only. HelpGetUp is not a substitute for
+            HelpGetUp is not a substitute for
             emergency services. If you are in immediate danger, call 911 (or
             your local emergency number).{" "}
             <Link href="/albany-food-list">Full food list</Link>. Contact:{" "}
-            <a href="mailto:cjames112@gmail.com">cjames112@gmail.com</a>
+            <a href="mailto:hello@helpgetup.com">hello@helpgetup.com</a>
           </p>
           <p className="fineprint">
-            © {new Date().getFullYear()} HelpGetUp. Built by{" "}
-            <a href="mailto:cjames112@gmail.com">cjames112@gmail.com</a>.
+            © {new Date().getFullYear()} HelpGetUp.
           </p>
         </div>
       </footer>

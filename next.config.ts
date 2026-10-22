@@ -17,6 +17,17 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  async redirects() {
+    return [
+      {
+        // Same as albanyaiguy.com: send the default Vercel host (not previews) to the real domain.
+        source: "/:path*",
+        has: [{ type: "host", value: "helpgetup-com.vercel.app" }],
+        destination: "https://helpgetup.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

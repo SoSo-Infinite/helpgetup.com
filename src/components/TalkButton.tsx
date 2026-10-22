@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GrokPlan, GrokTalk, SessionResult } from "@/lib/talk/grok-client";
 import { AGENT_NAME } from "@/lib/talk/identity";
+import { lengthBucket, trackEvent } from "@/lib/talk/track";
 import type { WalkLang } from "@/lib/food-week";
 import { useWalkLang } from "@/lib/walk-lang";
 
@@ -233,11 +234,14 @@ export default function TalkButton({ caption }: { caption?: string } = {}) {
         },
         onConnected: () => {
           if (talkRef.current !== talk) return;
+          trackEvent("session_connected");
           setState("talking");
         },
         onTool: (name, args) => runFoodTool(name, args),
         onEnd: (r) => {
           if (sid && r.connected) sendSummary(sid, r);
+          if (r.connected) trackEvent("session_length", { b: lengthBucket(r.seconds) });
+          else trackEvent("session_error", { r: "connect" });
           if (talkRef.current !== talk) return;
           if (!r.connected) {
             fail("connect");
@@ -254,6 +258,9 @@ export default function TalkButton({ caption }: { caption?: string } = {}) {
         if (talkRef.current !== talk) return;
         talkRef.current = null;
         talk.hangUp("error");
+        trackEvent("session_error", {
+          r: (err as Error)?.message === "unsupported" ? "unsupported" : "connect",
+        });
         fail(
           (err as Error)?.message === "unsupported" ? "unsupported" : "connect",
         );
@@ -282,6 +289,7 @@ export default function TalkButton({ caption }: { caption?: string } = {}) {
   const start = useCallback(async () => {
     if (talkRef.current || state === "connecting") return;
     setPressed(true);
+    trackEvent("talk_press");
     setProblem("");
     setServerMessage("");
     setState("connecting");
@@ -302,6 +310,9 @@ export default function TalkButton({ caption }: { caption?: string } = {}) {
     } catch (err) {
       void ctx?.close().catch(() => {});
       const unsupported = (err as Error)?.message === "unsupported";
+      trackEvent("mic_denied", {
+        r: unsupported ? "unsupported" : (err as Error)?.name || "error",
+      });
       fail(unsupported || inAppBrowser() ? "micUnsupported" : "micBlocked");
       setState("error");
       return;
@@ -316,6 +327,7 @@ export default function TalkButton({ caption }: { caption?: string } = {}) {
       data = { ok: false, reason: "network" };
     }
     if (!data.ok || !ctx || !data.token || !data.wsUrl) {
+      trackEvent("session_error", { r: data.ok ? (ctx ? "token" : "unsupported") : (data.reason ?? "token") });
       for (const track of mic.getTracks()) track.stop();
       void ctx?.close().catch(() => {});
       if (!data.ok) {

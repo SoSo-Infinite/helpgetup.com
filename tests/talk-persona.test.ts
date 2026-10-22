@@ -284,3 +284,11 @@ test("runFoodTool: bad JSON and unknown tools never throw", () => {
   assert.equal(runFoodTool("save_followup", "{}", NOW).error, "unknown tool");
   assert.equal(runFoodTool("find_food", JSON.stringify({ place: "Cohoes" }), NOW).ok, true);
 });
+
+test("persona: nothing to sell, never mentions prices or plans", async () => {
+  const { personaInstructions } = await import("../src/lib/talk/grok-persona.ts");
+  const i = personaInstructions();
+  assert.ok(i.includes("HelpGetUp has nothing to sell. Never mention prices, plans, fees, products or selling"));
+  assert.ok(!/per month|setup fee|\btiers?\b|subscription/i.test(i));
+  for (const m of i.matchAll(/.{0,60}\$\d.{0,60}/g)) assert.ok(/contribution/i.test(m[0]), m[0]);
+});
