@@ -7,7 +7,6 @@
  * Food lookups (find_food, senior_meals) run here in the browser on the site's own data.
  * Caps: 5 minutes, 30 s idle hang-up, hang-up on pagehide. No LiveKit.
  */
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GrokPlan, GrokTalk, SessionResult } from "@/lib/talk/grok-client";
 import { AGENT_NAME } from "@/lib/talk/identity";
@@ -32,7 +31,6 @@ const TEXT: Record<
     labelOff: string;
     end: string;
     again: string;
-    fallback: string;
     fine: string;
     micBlocked: string;
     micUnsupported: string;
@@ -58,7 +56,6 @@ const TEXT: Record<
     labelOff: `Talk to ${AGENT_NAME}, the HelpGetUp voice helper. Starts a voice conversation using your microphone.`,
     end: "End",
     again: "Talk again",
-    fallback: "See the food list",
     fine: "You’re talking to an AI. Up to 5 minutes. Audio isn’t recorded, but a short written summary is kept. No name or ID needed.",
     micBlocked:
       "The microphone is blocked. Allow it in your browser settings and tap again, or use the food list.",
@@ -87,7 +84,6 @@ const TEXT: Record<
     labelOff: `Habla con ${AGENT_NAME}, la ayudante de voz de HelpGetUp. Empieza una conversación de voz con tu micrófono.`,
     end: "Terminar",
     again: "Hablar otra vez",
-    fallback: "Ver la lista de comida",
     fine: "Hablas con una IA. Hasta 5 minutos. El audio no se graba, pero se guarda un breve resumen escrito. No necesitas dar tu nombre ni identificación.",
     micBlocked:
       "El micrófono está bloqueado. Permítelo en tu navegador y toca otra vez, o usa la lista de comida.",
@@ -395,14 +391,6 @@ export default function TalkButton({ caption }: { caption?: string } = {}) {
           <button type="button" className="talk-again" onClick={start}>
             {t.again}
           </button>
-        ) : null}
-        {state === "error" || state === "ended" ? (
-          <Link
-            href={lang === "es" ? "/albany-food-list/es" : "/albany-food-list"}
-            className="talk-fallback"
-          >
-            {t.fallback}
-          </Link>
         ) : null}
       </div>
       <p className="talk-fine">{t.fine}</p>

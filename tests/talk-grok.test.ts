@@ -501,7 +501,6 @@ test("wiring: token route is Grok only; button keeps the Albany AI Guy button's 
     "talk-hint",
     "talk-end",
     "talk-again",
-    "talk-fallback",
     "talk-fine",
   ]) {
     assert.ok(btn.includes(`"${cls}"`), cls);
