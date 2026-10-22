@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import FoodWalk from "@/components/FoodWalk";
+import TalkButton from "@/components/TalkButton";
+import { AGENT_NAME } from "@/lib/talk/identity";
 import WaitlistForm from "@/components/WaitlistForm";
 import { HeaderStart, SkipLink } from "@/components/WalkChrome";
 import { FOOD_PLACES, LIST_CHECKED_ON } from "@/data/albany-food";
@@ -57,6 +59,17 @@ export default function Home() {
               sizes="220px"
             />
             <FoodWalk />
+          </div>
+        </section>
+
+        {/* Voice helper. Below the walk so the first question stays above the fold on phones. */}
+        <section className="section talk-section" id="talk" aria-labelledby="talk-title">
+          <div className="wrap narrow">
+            <h2 id="talk-title">Rather talk?</h2>
+            <p className="sub">
+              Tap and ask {AGENT_NAME}, our AI voice helper, about food near you. Se habla español.
+            </p>
+            <TalkButton caption="Free. Pantries, meals, SNAP, and meals for people 60 and up in Albany County." />
           </div>
         </section>
 
