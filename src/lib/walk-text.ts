@@ -79,9 +79,9 @@ export const WALK_TEXT = {
     errSsn: "Don’t put a Social Security number here. A ZIP or a neighborhood is enough.",
     errEmpty: "Enter a ZIP or an Albany County neighborhood.",
     errOutsideZip: (zip: string) =>
-      `${zip} is outside this demo. HelpGetUp’s food list is Albany County only. For SNAP in another state, start at America.gov. For pantries outside this county, use the Food Connect map.`,
+      `${zip} is outside Albany County. HelpGetUp’s food list is Albany County only. For SNAP in another state, start at America.gov. For pantries outside this county, use the Food Connect map.`,
     errUnknown: (q: string) =>
-      `“${q}” isn’t a ZIP or neighborhood this demo knows. Try 12206, South End, Cohoes, or Ravena.`,
+      `“${q}” isn’t a ZIP or neighborhood this guide knows. Try 12206, South End, Cohoes, or Ravena.`,
     cantMatch: "Can’t match that yet",
     foodConnectMap: "Food Connect map",
     tryAnother: "Try another place",
@@ -110,7 +110,7 @@ export const WALK_TEXT = {
     say: (kind: "meal" | "food", area: string, when: string) =>
       `“Hi, I need ${kind === "meal" ? "the community meal" : "food"}. I’m in ${area}. Are you open ${when}? Do I need to call ahead?”`,
     bring: (phone: string) =>
-      `What to bring: only what they ask for. This demo does not have a confirmed document list for this stop. Call ${phone} and ask. Common asks are an ID and something with your address — treat that as a guess until they say so.`,
+      `What to bring: only what they ask for. This guide does not have a confirmed document list for this stop. Call ${phone} and ask. Common asks are an ID and something with your address — treat that as a guess until they say so.`,
     fromSource: "From the source:",
     addToCalendar: "Add to calendar",
     mapsCalFine:
