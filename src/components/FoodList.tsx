@@ -63,7 +63,7 @@ export const LIST_TEXT = {
     homeDeliveredEligibility: SENIOR_PROGRAM.homeDelivered.eligibility,
     mealsLabel: "Meals as published:",
     noMeals: "Not published. Call to ask the meal time (60+).",
-    footer: "HelpGetUp is not an emergency service. If you are in immediate danger, call 911. HelpGetUp doesn’t call anyone or fill out forms for you.",
+    footer: "HelpGetUp is not an emergency service. If you are in immediate danger, call 911.",
     back: "Back to the food walk",
   },
   es: {
@@ -122,7 +122,7 @@ export const LIST_TEXT = {
     mealsLabel: "Comidas publicadas (en inglés):",
     noMeals: "No publicado. Llame para preguntar la hora de la comida (60+).",
     footer:
-      "HelpGetUp no es un servicio de emergencia. Si está en peligro inmediato, llame al 911. HelpGetUp no llama a nadie ni llena formularios por usted.",
+      "HelpGetUp no es un servicio de emergencia. Si está en peligro inmediato, llame al 911.",
     back: "Volver a la guía de comida",
   },
 } as const;

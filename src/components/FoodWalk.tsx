@@ -282,13 +282,9 @@ export default function FoodWalk() {
                     type="checkbox"
                     checked={senior}
                     onChange={(e) => setSenior(e.target.checked)}
-                    aria-describedby="senior-60-help"
                   />
                   <span>{t.seniorToggle}</span>
                 </label>
-                <p className="walk-help fine" id="senior-60-help">
-                  {t.seniorToggleHelp}
-                </p>
                 <button className="btn btn-primary" type="submit">
                   {t.showWeek}
                 </button>
@@ -359,7 +355,6 @@ export default function FoodWalk() {
             {step === "done" && (
               <div>
                 <h2 className="walk-q">{t.doneTitle}</h2>
-                <p className="walk-help">{t.doneHelp}</p>
                 <button className="btn btn-primary" type="button" onClick={reset}>
                   {t.again}
                 </button>
@@ -397,7 +392,7 @@ function SnapNext({ kind, onContinue }: { kind: SnapKind | ""; onContinue: () =>
         <li>
           <a href={OFFICIAL.hotline.phoneHref}>{OFFICIAL.hotline.phone}</a>
           <p>
-            {t.hotlineName}. {t.hotlineHours}. {t.youCall}
+            {t.hotlineName}. {t.hotlineHours}.
           </p>
           <p>
             {t.officeAddress} {OFFICIAL.hotline.address}.{" "}
@@ -411,7 +406,6 @@ function SnapNext({ kind, onContinue }: { kind: SnapKind | ""; onContinue: () =>
           </p>
         </li>
       </ol>
-      <p className="walk-help">{t.neverCollect}</p>
       <button className="btn btn-primary" type="button" onClick={onContinue}>
         {t.checkBack}
       </button>
@@ -595,7 +589,6 @@ function FoodScript({
           </a>
         ) : null}
       </div>
-      <p className="walk-help fine">{t.mapsCalFine}</p>
       <SourceLine place={place} />
       <p className="source-line">
         <a href={phoneHref(place.phone)}>{formatPhone(place.phone)}</a>

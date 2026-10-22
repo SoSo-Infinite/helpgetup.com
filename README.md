@@ -1,13 +1,13 @@
 # HelpGetUp
 
-Landing + waitlist site for [helpgetup.com](https://helpgetup.com).
+Site for [helpgetup.com](https://helpgetup.com): a free food guide for Albany County, NY, plus Rosa, the voice helper.
 
-**Take the next step.** Early-access outcome-resolution assistant — name a goal, get a concrete next action, decide whether to take it.
+**Take the next step.**
 
 ## Stack
 
 - Next.js App Router (TypeScript)
-- Waitlist via Route Handler → [FormSubmit](https://formsubmit.co) → `cjames112@gmail.com`
+- Contact: hello@helpgetup.com (Forward Email DNS forwarding to a private inbox)
 - Brand lockup: `public/helpgetup-logo.png`
 
 ## Local
@@ -17,9 +17,9 @@ npm install
 npm run dev
 ```
 
-## Albany County food demo
+## Albany County food walk
 
-The homepage walk is food-only and Albany County only. Stops live in `src/data/albany-food.ts`. Hours are copied from the [Food Connect map](https://map.thefoodpantries.org/) (checked 2026-09-30), including the Albany County pantries and community meals on that map, and from the February 2026 Albany resource flyer for Unity on the Move at A Child’s Place. SNAP links go to America.gov, NYS myBenefits, and the Albany County hotline. The demo does not collect IDs or place calls.
+The homepage walk is food-only and Albany County only. Stops live in `src/data/albany-food.ts`. Hours are copied from the [Food Connect map](https://map.thefoodpantries.org/) (checked 2026-09-30), including the Albany County pantries and community meals on that map, and from the February 2026 Albany resource flyer for Unity on the Move at A Child’s Place. SNAP links go to America.gov, NYS myBenefits, and the Albany County hotline.
 
 ### Freshness, offline, Spanish (Oct 9, 2026)
 - `npm run verify:sources`: compares every row with the Food Connect map's own published data; `--write` stamps `src/data/verified.ts`. Each card shows "Source updated" and "Last verified by HelpGetUp"; rows whose source is over 12 months old get a "call before you go" flag.
