@@ -49,6 +49,9 @@ function mac(key: string, body: string): string {
 
 export type Turn = { role: "caller" | "agent"; text: string };
 export type SummaryInput = {
+  /** "albanyaiguy" when the caller was handed off live from the Albany AI Guy button. */
+  handoff_from?: unknown;
+  handoff_context?: unknown;
   turns?: unknown;
   seconds?: unknown;
   end?: unknown;
@@ -86,7 +89,9 @@ export function buildSummary(input: SummaryInput): {
   turns: Turn[];
   seconds: number;
   end: string;
+  handoffFrom: string | null;
 } {
+  const handoffFrom = input.handoff_from === "albanyaiguy" ? "albanyaiguy" : null;
   const turns = cleanTurns(input.turns);
   const seconds = Math.max(
     0,
@@ -97,13 +102,20 @@ export function buildSummary(input: SummaryInput): {
   const s = seconds % 60;
   const lines = [
     `HelpGetUp talk button conversation, ${m}m ${s}s (${end}).`,
+    ...(handoffFrom
+      ? [
+          `Handed off live from the Albany AI Guy (albanyaiguy.com)${
+            clip(input.handoff_context, 200) ? `: ${maskDigits(clip(input.handoff_context, 200))}` : "."
+          }`,
+        ]
+      : []),
     ...turns.map(
       (t) =>
         `${t.role === "caller" ? "Caller asked" : `${AGENT_NAME} said`}: ${t.text}`,
     ),
   ];
   if (!turns.length) lines.push("No speech was transcribed.");
-  return { text: lines.join("\n"), turns, seconds, end };
+  return { text: lines.join("\n"), turns, seconds, end, handoffFrom };
 }
 
 /**
@@ -126,6 +138,7 @@ export async function postAlert(
       },
       body: JSON.stringify({
         source: "helpgetup.com talk button",
+        ...(summary.handoffFrom ? { handoff_from: "albanyaiguy.com talk button" } : {}),
         summary: summary.text,
         seconds: summary.seconds,
         end: summary.end,

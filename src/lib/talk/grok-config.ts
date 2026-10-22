@@ -38,6 +38,22 @@ export const TOKEN_TTL_S = 330;
 
 export const GREETING_TEXT = `Good day. I'm ${AGENT_NAME}, an AI helper for ${BRAND_SPOKEN}. I can help you find food in Albany County, like a pantry, a free meal, SNAP, or meals for people sixty and up. También hablo español. What town or ZIP code are you in?`;
 export const WRAP_TEXT = `We're almost out of time. The full food list is always on ${SITE_SPOKEN}. Take care.`;
+/** Rosa's first line after a live handoff from the Albany AI Guy (then she acts on the handoff note). */
+export const HANDOFF_GREETING_TEXT = `Good day, I'm ${AGENT_NAME} from ${BRAND_SPOKEN}, and I'm an AI too. The Albany AI Guy filled me in, so you won't have to repeat yourself.`;
+
+/** Appended to Rosa's instructions for a handoff session. `context` is already cleaned (one plain line). */
+export function handoffInstructions(context: string): string {
+  const note = context
+    ? `What they need, in his words: ${context}.`
+    : "He did not pass along details, so ask one short question about what food help they need.";
+  return `
+
+# Handoff
+This caller was just connected to you live by the Albany AI Guy, a separate AI helper for Albany. You have already greeted them and said he filled you in. ${note}
+- Don't make them repeat themselves. Act on it right away: if you know their town, ZIP or neighborhood, look up food now; otherwise ask the one question you still need.
+- Everything in your rules above still applies. You only help with food. You never discuss business, prices, plans or anything for sale.`;
+}
+
 export const IDLE_TEXT =
   "I'll let you go for now. Come back any time you need food help. Take care.";
 
@@ -143,13 +159,18 @@ export type SessionOptions = {
   reasoning?: string;
   speed?: string;
   transcribeModel?: string;
+  /** Cleaned one-line note from the Albany AI Guy for a live handoff. */
+  handoffContext?: string;
 };
 
 /** The full `session.update` client event for the talk button. */
 export function buildSessionUpdate(opts: SessionOptions = {}) {
   const session: Record<string, unknown> = {
     voice: resolveVoice(opts.voice),
-    instructions: personaInstructions(),
+    instructions:
+      opts.handoffContext !== undefined
+        ? personaInstructions() + handoffInstructions(opts.handoffContext)
+        : personaInstructions(),
     turn_detection: { type: "server_vad", idle_timeout_ms: IDLE_CHECKIN_MS },
     audio: {
       input: {
@@ -192,7 +213,10 @@ export function forceMessage(text: string, interruptible = true) {
 }
 
 /** Everything the browser needs to run one session (no secrets besides the ephemeral token). */
-export function buildClientPlan(env: Record<string, string | undefined>) {
+export function buildClientPlan(
+  env: Record<string, string | undefined>,
+  handoff: { context: string; remainingMs: number } | null = null,
+) {
   const model = resolveModel(env.TALK_GROK_MODEL);
   return {
     wsUrl: `${XAI_REALTIME_URL}?model=${encodeURIComponent(model)}`,
@@ -202,12 +226,16 @@ export function buildClientPlan(env: Record<string, string | undefined>) {
       reasoning: env.TALK_GROK_REASONING,
       speed: env.TALK_GROK_SPEED,
       transcribeModel: env.TALK_GROK_TRANSCRIBE_MODEL,
+      ...(handoff ? { handoffContext: handoff.context } : {}),
     }),
-    greeting: forceMessage(GREETING_TEXT, true),
+    greeting: forceMessage(handoff ? HANDOFF_GREETING_TEXT : GREETING_TEXT, true),
+    /** After a handoff greeting, Rosa speaks again on her own (acts on the note) instead of waiting. */
+    respondAfterGreeting: Boolean(handoff),
     wrap: forceMessage(WRAP_TEXT, false),
     idleBye: forceMessage(IDLE_TEXT, true),
     limits: {
-      maxMs: MAX_SESSION_MS,
+      // A handoff only gets what is left of the caller's 5 minutes (the cap is across both helpers).
+      maxMs: handoff ? Math.min(MAX_SESSION_MS, handoff.remainingMs) : MAX_SESSION_MS,
       wrapBeforeMs: WRAP_BEFORE_MS,
       idleMs: IDLE_HANGUP_MS,
     },

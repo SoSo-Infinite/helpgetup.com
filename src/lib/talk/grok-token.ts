@@ -6,9 +6,11 @@
 import { alertsConfigured, signSession } from "./alert";
 import {
   buildClientPlan,
+  MAX_SESSION_MS,
   TOKEN_TTL_S,
   XAI_CLIENT_SECRETS_URL,
 } from "./grok-config";
+import { type Handoff, handoffOrigin, MIN_HANDOFF_MS, parseHandoff } from "./handoff";
 import { clientIp, dayKey, bump as realBump, peek as realPeek } from "./limits";
 
 type Env = Record<string, string | undefined>;
@@ -69,8 +71,24 @@ export async function grokToken(
       "Live voice is off right now. Use the food list instead.",
     );
   }
-  if (!sameOrigin(req)) {
+  // Same-site button, or a live handoff from an allowed Albany AI Guy origin (TALK_HANDOFF_ORIGINS).
+  const crossOrigin = sameOrigin(req) ? null : handoffOrigin(req, env);
+  if (!sameOrigin(req) && !crossOrigin) {
     return deny(403, "origin", "Live voice only works from helpgetup.com.");
+  }
+  let handoff: Handoff | null = null;
+  if (crossOrigin) {
+    let body: unknown = null;
+    try {
+      body = await req.json();
+    } catch {
+      /* handled below */
+    }
+    handoff = parseHandoff(body, MAX_SESSION_MS);
+    if (!handoff) return deny(400, "handoff", "Missing handoff details.");
+    if (handoff.remainingMs < MIN_HANDOFF_MS) {
+      return deny(409, "no_time", "There isn't enough time left for a handoff.");
+    }
   }
 
   const perIp = Number(env.TALK_PER_IP_LIMIT || 4);
@@ -153,7 +171,7 @@ export async function grokToken(
   await bump(`min:${minute}`, 120);
 
   const alerts = alertsConfigured(env);
-  const plan = buildClientPlan(env);
+  const plan = buildClientPlan(env, handoff);
   return Response.json(
     {
       ok: true,
@@ -166,6 +184,7 @@ export async function grokToken(
         ? signSession(String(env.TALK_ALERT_WEBHOOK_KEY).trim(), now())
         : null,
       maxMinutes: plan.limits.maxMs / 60000,
+      handoff: Boolean(handoff),
     },
     { headers: { "cache-control": "no-store" } },
   );

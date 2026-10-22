@@ -488,7 +488,7 @@ test("wiring: token route is Grok only; button keeps the Albany AI Guy button's 
     join(root, "src/app/api/talk/token/route.ts"),
     "utf8",
   );
-  assert.match(route, /return grokToken\(req\)/);
+  assert.match(route, /withCors\(await grokToken\(req\), handoffOrigin\(req\)\)/);
   assert.ok(!/livekit/i.test(route));
   const btn = readFileSync(join(root, "src/components/TalkButton.tsx"), "utf8");
   for (const cls of [
