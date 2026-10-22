@@ -37,3 +37,33 @@ The homepage walk is food-only and Albany County only. Stops live in `src/data/a
 ## Deploy
 
 Vercel project `helpgetup-com`, domain `helpgetup.com` / `www.helpgetup.com`.
+
+## Talk button: Rosa, the voice helper (Oct 22, 2026, branch `talk-button`)
+
+Same technology as the albanyaiguy.com Grok voice button (branch `grok-voice`), with its own identity and job.
+Rosa is a warm, judgment-free AI voice helper for food help in Albany County. She is not the Albany AI Guy.
+
+- Browser talks straight to xAI's Grok Voice Agent (`wss://api.x.ai/v1/realtime`) with a short-lived client
+  secret from `POST /api/talk/token`. `XAI_API_KEY` never leaves the server. No LiveKit.
+- Facts come only from this site's data. `find_food` and `senior_meals` (`src/lib/talk/food-tool.ts`) run in
+  the browser on `src/data/*` and return published hours word for word, with "call before you go" flags.
+- Hand-offs: restaurants, things to do, businesses, contractors → Albany AI Guy (albany A I guy dot com);
+  rent, housing, shelter, utilities, heating, other benefits → 211; emergencies → 911; self-harm → 988.
+- "Good day" greeting, says she's an AI. 518 is always "five-one-eight" (`replace` map and pre-spoken numbers).
+- Caps: 5 minutes (wrap-up line at 4:40), 30 s idle hang-up, hang-up when the tab closes; per-IP, per-minute and
+  daily token limits.
+- `public/sw.js` still never caches `/api/*`.
+
+Env (Vercel project `helpgetup-com`; nothing is set yet, so the button answers "Live voice is off right now"):
+
+| Var | Default | |
+| --- | --- | --- |
+| `XAI_API_KEY` | (unset = off) | xAI key, server only |
+| `TALK_ENABLED` | on | `0` turns voice off |
+| `TALK_GROK_VOICE` | `ara` | warm and friendly; alternates `celeste`, `ursa`, `carina`. `leo` (Albany AI Guy) is refused. |
+| `TALK_GROK_MODEL` | `grok-voice-3.0` | |
+| `TALK_PER_IP_LIMIT` / `TALK_PER_IP_WINDOW_S` / `TALK_GLOBAL_PER_MIN` / `TALK_DAILY_CAP` | 4 / 600 / 8 / 60 | |
+| `TALK_ALERT_WEBHOOK_URL` + `TALK_ALERT_WEBHOOK_KEY` | unset = no-op | short written summary after each call (long digit runs masked) |
+
+Tests: `npm test` (mocked; no network, no paid calls). Paid smoke test, only with Chad's OK:
+`XAI_API_KEY=... npm run smoke:voice -- --yes-paid` (about 3 to 6 cents; refuses without the flag).

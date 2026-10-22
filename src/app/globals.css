@@ -991,3 +991,301 @@ ul.examples {
   background: #fff;
 }
 @media print { .fl-lang, .fl-draft { display: none !important; } }
+
+/* ——— Talk button (Rosa, Grok voice). Same shape, states and bounce as the albanyaiguy.com button,
+   in HelpGetUp blue and navy on white. ——— */
+.talk-section {
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.talk-section h2 {
+  margin-bottom: 0.35rem;
+}
+
+.talk-section .sub {
+  margin: 0 auto 1.5rem;
+}
+
+.talk {
+  --level: 0;
+  --talk-blue: 40, 95, 232; /* --blue */
+  --talk-navy: 11, 31, 58; /* --navy */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.talk-bounce {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.talk-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(180px, 44vw, 240px);
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 9999px;
+  border: 3px solid rgba(var(--talk-blue), 0.9);
+  background: radial-gradient(circle at 50% 40%, #ffffff 58%, var(--blue-soft) 100%);
+  box-shadow:
+    0 18px 44px -18px rgba(var(--talk-blue), 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  touch-action: manipulation;
+}
+
+.talk-btn:active {
+  transform: scale(0.96);
+}
+
+.talk-btn:focus-visible {
+  outline: 3px solid var(--navy);
+  outline-offset: 6px;
+}
+
+.talk-mascot {
+  position: relative;
+  z-index: 2;
+  width: 78%;
+  height: auto;
+  border-radius: 50%;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* A slow blue arc inside the rim: the logo's version of the Albany AI Guy whirlwind. */
+.talk-vortex {
+  position: absolute;
+  z-index: 1;
+  inset: 5%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 62%,
+    rgba(var(--talk-blue), 0.22) 78%,
+    rgba(var(--talk-blue), 0.5) 90%,
+    transparent 100%
+  );
+  -webkit-mask: radial-gradient(circle, transparent 64%, #000 66%);
+  mask: radial-gradient(circle, transparent 64%, #000 66%);
+}
+
+.talk-ring,
+.talk-glow {
+  position: absolute;
+  inset: -9px;
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.talk-ring {
+  border: 3px solid rgb(var(--talk-blue));
+  transform: scale(calc(1 + var(--level) * 0.08));
+}
+
+.talk-glow {
+  box-shadow:
+    0 0 0 4px rgba(var(--talk-navy), 0.85),
+    0 0 calc(26px + var(--level) * 56px) rgba(var(--talk-blue), 0.6);
+}
+
+.talk[data-state="listening"] .talk-ring,
+.talk[data-state="thinking"] .talk-ring {
+  opacity: 1;
+}
+
+.talk[data-state="talking"] .talk-glow {
+  opacity: 1;
+}
+
+.talk-hint {
+  /* Sits on the button's lower edge. No transform here: the pulse animates transform. */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.85rem;
+  width: max-content;
+  margin: 0 auto;
+  z-index: 3;
+  max-width: 16rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 9999px;
+  background: var(--blue);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+  box-shadow: 0 8px 22px -10px rgba(var(--talk-blue), 0.9);
+  pointer-events: none;
+}
+
+.talk-caption {
+  margin: 0.85rem 0 0;
+  max-width: 24rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.talk-status {
+  min-height: 1.5rem;
+  max-width: 28rem;
+  margin: 0;
+  font-size: 1rem;
+  color: var(--navy-muted);
+}
+
+.talk[data-state="error"] .talk-status {
+  color: var(--err);
+}
+
+/* Keep the live region in the tree (screen readers), but take no room when idle. */
+.talk-status:empty {
+  min-height: 0;
+  margin: -0.375rem 0;
+}
+
+.talk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+}
+
+.talk-actions:empty {
+  display: none;
+}
+
+.talk-end,
+.talk-again,
+.talk-fallback {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border-radius: 9999px;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.talk-end {
+  background: var(--err);
+  color: #ffffff;
+}
+
+.talk-again {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.talk-fallback {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--navy);
+}
+
+.talk-end:focus-visible,
+.talk-again:focus-visible,
+.talk-fallback:focus-visible {
+  outline: 3px solid var(--navy);
+  outline-offset: 3px;
+}
+
+.talk-fine {
+  margin: 0;
+  max-width: 26rem;
+  font-size: 0.85rem;
+  color: var(--navy-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .talk[data-state="idle"] .talk-bounce,
+  .talk[data-state="ended"] .talk-bounce,
+  .talk[data-state="error"] .talk-bounce {
+    animation: talk-bounce 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  .talk-vortex {
+    animation: talk-vortex-spin 2.4s linear infinite;
+  }
+
+  .talk-hint {
+    animation: talk-pulse 2.4s ease-in-out infinite;
+  }
+
+  .talk[data-state="connecting"] .talk-mascot {
+    animation: talk-spin 0.9s cubic-bezier(0.3, 0.6, 0.3, 1) infinite;
+  }
+
+  .talk[data-state="thinking"] .talk-ring {
+    animation: talk-breathe 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes talk-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-14px);
+  }
+  60% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes talk-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.88;
+  }
+}
+
+@keyframes talk-spin {
+  from {
+    transform: perspective(800px) rotateY(0deg);
+  }
+  to {
+    transform: perspective(800px) rotateY(360deg);
+  }
+}
+
+@keyframes talk-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes talk-vortex-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
