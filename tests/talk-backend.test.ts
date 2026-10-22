@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { GET, POST } from "../src/app/api/t/route.ts";
 import { postAlert } from "../src/lib/talk/alert.ts";
@@ -46,4 +46,23 @@ test("site: contact is hello@helpgetup.com, no demo wording, Vercel Analytics, v
   assert.ok(!/early access|this demo/i.test(page + readFileSync("src/lib/walk-text.ts", "utf8")));
   assert.ok(readFileSync("src/app/layout.tsx", "utf8").includes("<Analytics />"));
   assert.ok(readFileSync("next.config.ts", "utf8").includes('value: "helpgetup-com.vercel.app"'));
+});
+
+test("site copy: no waitlist, no public gmail, no 'we don't call' explainer lines", () => {
+  const files = [
+    "src/app/page.tsx",
+    "src/lib/walk-text.ts",
+    "src/components/FoodWalk.tsx",
+    "src/components/FoodList.tsx",
+    "src/data/albany-food-c.ts",
+    "src/app/layout.tsx",
+  ].map((f) => readFileSync(f, "utf8"));
+  const all = files.join("\n");
+  assert.ok(!/waitlist|lista de espera/i.test(all));
+  assert.ok(!/cjames112|gmail/i.test(all));
+  assert.ok(!/does not call|doesn['’]t call|not call anyone|we do not call|no llama|nosotros no/i.test(all));
+  assert.ok(!/this page does not|this walk does not|\bdemo\b|coming soon|prototype/i.test(all));
+  assert.ok(!existsSync("src/app/api/waitlist/route.ts"));
+  assert.ok(!existsSync("src/components/WaitlistForm.tsx"));
+  assert.match(files[0], /mailto:hello@helpgetup\.com/);
 });

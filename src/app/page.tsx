@@ -3,7 +3,6 @@ import Link from "next/link";
 import FoodWalk from "@/components/FoodWalk";
 import TalkButton from "@/components/TalkButton";
 import { AGENT_NAME } from "@/lib/talk/identity";
-import WaitlistForm from "@/components/WaitlistForm";
 import { HeaderStart, SkipLink } from "@/components/WalkChrome";
 import { FOOD_PLACES, LIST_CHECKED_ON } from "@/data/albany-food";
 import { SENIOR_MEAL_SITES } from "@/data/albany-senior-meals";
@@ -84,8 +83,7 @@ export default function Home() {
             </p>
             <p className="sub">
               Every stop shows where the information came from and when we last
-              checked it. HelpGetUp doesn’t call anyone, sign you up, or fill out a
-              form. You decide what to do.
+              checked it.
             </p>
           </div>
         </section>
@@ -143,19 +141,6 @@ export default function Home() {
               <Link href="/albany-food-list">See the full list on one page</Link>{" "}
               (easy to print or share).
             </p>
-          </div>
-        </section>
-
-        <section className="section alt waitlist" id="waitlist">
-          <div className="wrap">
-            <h2>Get a note when there’s more</h2>
-            <p className="sub" style={{ marginInline: "auto" }}>
-              Food is the first piece. HelpGetUp is still being built. Leave your
-              email and you’ll get a note when the next part is ready. Nothing else.
-            </p>
-            <div className="panel">
-              <WaitlistForm />
-            </div>
           </div>
         </section>
       </main>

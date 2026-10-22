@@ -1,6 +1,6 @@
 # HelpGetUp
 
-> HelpGetUp (helpgetup.com) is an early-stage, free guide for people stuck on food in Albany County, New York. It gives one clear next step: a pantry, community meal, produce stop, community fridge, or (for people 60+) a senior meal site open this week, or the official SNAP / EBT path (NYS myBenefits and the Albany County SNAP hotline). The person decides whether to take the step.
+> HelpGetUp (helpgetup.com) is a free guide for people stuck on food in Albany County, New York. It gives one clear next step: a pantry, community meal, produce stop, community fridge, or (for people 60+) a senior meal site open this week, or the official SNAP / EBT path (NYS myBenefits and the Albany County SNAP hotline). The person decides whether to take the step.
 
 ## Pages
 - [Home and food walk](https://helpgetup.com/): pick "Hungry tonight", "SNAP / EBT", or "Both"; enter an Albany County ZIP or neighborhood; see stops with published hours this week, closest first. Spanish version: https://helpgetup.com/?lang=es (draft Spanish; place names and hours stay in English as published).

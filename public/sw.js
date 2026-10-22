@@ -1,13 +1,13 @@
 /* HelpGetUp offline support.
  * - Page loads: network first, fall back to the last saved copy when offline.
  * - Built assets (/_next/static, icons, logos): cache first; they are content-hashed or static.
- * - Never caches /api/* (waitlist) or anything cross-origin.
+ * - Never caches /api/* or anything cross-origin.
  * The food list lives inside the page bundle, so once the page has loaded once,
  * the whole walk (ZIP lookup, this week's times, Maps/calendar links) works offline.
  */
 // Bump VERSION when the food list or page shell changes in a way old offline copies must not keep.
 // activate deletes every other cache, so a bump drops old pages and assets.
-const VERSION = "hgu-offline-v2";
+const VERSION = "hgu-offline-v3";
 // Content-hashed /_next/static files pile up across deploys under one VERSION; keep the newest N.
 const MAX_ENTRIES = 120;
 const SHELL = ["/", "/icon.svg", "/helpgetup-logo.png", "/helpgetup-mark.png"];

@@ -5,7 +5,7 @@ import { VEGGIE_MOBILE_STOPS } from "./albany-food-veggie";
 import { VERIFIED } from "./verified";
 
 /**
- * Albany County food rows for the demo.
+ * Albany County food rows.
  * Every hours string is copied from the cited source. Structured `slots`
  * are a reading of that string so the page can say what falls this week.
  * If a source did not publish an end time, `end` is null.
@@ -149,7 +149,7 @@ export const OFFICIAL = {
   },
 } as const;
 
-/** Albany County ZIPs this demo will answer. Others get a county-only message. */
+/** Albany County ZIPs the walk answers. Others get a county-only message. */
 export const ALBANY_COUNTY_ZIPS = new Set([
   "12007",
   "12009",
