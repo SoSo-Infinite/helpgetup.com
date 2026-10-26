@@ -6,6 +6,7 @@
 - [Home and food walk](https://helpgetup.com/): pick "Hungry tonight", "SNAP / EBT", or "Both"; enter an Albany County ZIP or neighborhood; see stops with published hours this week, closest first. Spanish version: https://helpgetup.com/?lang=es (draft Spanish; place names and hours stay in English as published).
 - [Full Albany County food list](https://helpgetup.com/albany-food-list): every listed place on one plain page, grouped by type, with address, phone, hours as published, eligibility notes, source, and check date. Best page to cite.
 - [Lista completa en español (draft Spanish)](https://helpgetup.com/albany-food-list/es): the same list with Spanish headings, labels and help text. Place names, addresses, hours and notes stay in English as published. The Spanish is a draft awaiting native review.
+- [Privacy](https://helpgetup.com/privacy): what the site and the Rosa talk button collect, Vercel Analytics, and how hello@helpgetup.com is used. The site sells nothing.
 
 ## Where the data comes from
 - The Food Pantries for the Capital District's Food Connect map (https://map.thefoodpantries.org/) and its February 2026 Albany County resource flyer.
@@ -14,8 +15,9 @@
 - Each place shows its source and the date the source was updated. Rows are re-checked against the sources; the page shows the list's last-checked date.
 
 ## What it does not do
-- It does not call, email, fax, or send anything on a person's behalf, and it does not fill out government forms.
+- It does not call, fax, or send anything on a person's behalf, and it does not fill out government forms.
 - It does not collect a Social Security number, driver's license, benefits password, or ID photo. The ZIP or neighborhood typed in stays in the browser.
+- The home page has an optional signup (name and email) for updates and help resources. That is the only name and email the site asks for. See the privacy page.
 - It is not an emergency service. In immediate danger, call 911.
 
 ## Scope and cautions

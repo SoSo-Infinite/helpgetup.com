@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FoodWalk from "@/components/FoodWalk";
 import TalkButton from "@/components/TalkButton";
+import UpdatesForm from "@/components/UpdatesForm";
 import { AGENT_NAME } from "@/lib/talk/identity";
 import { HeaderStart, SkipLink } from "@/components/WalkChrome";
 import { FOOD_PLACES, LIST_CHECKED_ON } from "@/data/albany-food";
@@ -91,7 +92,7 @@ export default function Home() {
         <section className="section alt" id="how">
           <div className="wrap">
             <h2>How it works</h2>
-            <p className="sub">Three steps. No account, no forms.</p>
+            <p className="sub">Three steps. No account needed to look up food.</p>
             <ol className="steps">
               <li className="card">
                 <div className="step-num" aria-hidden="true">1</div>
@@ -143,6 +144,17 @@ export default function Home() {
             </p>
           </div>
         </section>
+
+        <section className="section alt" id="updates" aria-labelledby="updates-title">
+          <div className="wrap narrow">
+            <h2 id="updates-title">Get updates and help resources</h2>
+            <p className="sub">
+              Leave your name and email if you want updates and help resources about food help in
+              Albany County.
+            </p>
+            <UpdatesForm />
+          </div>
+        </section>
       </main>
       <footer className="site-footer">
         <div className="wrap footer-grid">
@@ -156,7 +168,8 @@ export default function Home() {
             HelpGetUp is not a substitute for
             emergency services. If you are in immediate danger, call 911 (or
             your local emergency number).{" "}
-            <Link href="/albany-food-list">Full food list</Link>. Contact:{" "}
+            <Link href="/albany-food-list">Full food list</Link>.{" "}
+            <Link href="/privacy">Privacy</Link>. Contact:{" "}
             <a href="mailto:hello@helpgetup.com">hello@helpgetup.com</a>
           </p>
           <p className="fineprint">
