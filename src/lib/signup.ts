@@ -1,13 +1,14 @@
 /**
  * Optional "Get updates and help resources" signup.
- * The repo has no mailer and no database. A signup is recorded the same way talk-button
- * counts are: one JSON line on the server log (`hgu: "signup"`). When the existing talk
- * alert webhook is configured, the same name and email are also posted there. No new
- * service. Nothing is sold.
+ * Each signup is stored in Vercel Blob (private, or public at the same unguessable path
+ * if private access is rejected), using BLOB_READ_WRITE_TOKEN. The server log line and
+ * the existing talk-alert webhook stay. A missing token or a failed write still succeeds
+ * for the visitor. Nothing is sold.
  */
 import { alertsConfigured } from "./talk/alert";
 import { bump as realBump, clientIp } from "./talk/limits";
 import { SIGNUP_COPY } from "./signup-copy";
+import { storeSignup, type SignupPut } from "./signup-store";
 
 export { SIGNUP_COPY };
 
@@ -18,6 +19,9 @@ export type SignupDeps = {
   fetchImpl?: typeof fetch;
   bump?: (key: string, ttlS: number) => Promise<number>;
   log?: (line: string) => void;
+  putBlob?: SignupPut;
+  now?: () => number;
+  random?: () => string;
 };
 
 const MAX_BODY = 8 * 1024;
@@ -170,6 +174,14 @@ export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise
   if (n > PER_IP) return reply(req, contentType, 429, SIGNUP_COPY.limited, false);
 
   log(JSON.stringify({ hgu: "signup", name: parsed.name, email: parsed.email }));
+  try {
+    await storeSignup(
+      { name: parsed.name, email: parsed.email },
+      { env, putBlob: deps.putBlob, now: deps.now, random: deps.random },
+    );
+  } catch {
+    /* a failed store must not change the success response */
+  }
   await notifySignup(parsed.name, parsed.email, env, deps.fetchImpl ?? fetch);
   return reply(req, contentType, 200, SIGNUP_COPY.ok, true);
 }
