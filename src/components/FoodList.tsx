@@ -65,6 +65,7 @@ export const LIST_TEXT = {
     noMeals: "Not published. Call to ask the meal time (60+).",
     footer: "HelpGetUp is not an emergency service. If you are in immediate danger, call 911.",
     back: "Back to the food walk",
+    privacy: "Privacy",
   },
   es: {
     path: "/albany-food-list/es",
@@ -124,6 +125,7 @@ export const LIST_TEXT = {
     footer:
       "HelpGetUp no es un servicio de emergencia. Si está en peligro inmediato, llame al 911.",
     back: "Volver a la guía de comida",
+    privacy: "Privacidad",
   },
 } as const;
 
@@ -362,7 +364,8 @@ export function FoodList({ lang }: { lang: ListLang }) {
       <footer className="site-footer" lang={lang}>
         <div className="wrap footer-grid">
           <p className="fineprint">
-            {t.footer} <Link href={lang === "es" ? "/?lang=es" : "/"}>{t.back}</Link>.
+            {t.footer} <Link href={lang === "es" ? "/?lang=es" : "/"}>{t.back}</Link>.{" "}
+            <Link href="/privacy">{t.privacy}</Link>.
           </p>
         </div>
       </footer>

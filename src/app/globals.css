@@ -651,7 +651,9 @@ img {
 #walk,
 #gap,
 #how,
-#examples {
+#examples,
+#updates,
+#privacy {
   scroll-margin-top: 84px;
 }
 
@@ -1242,4 +1244,88 @@ ul.examples {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Updates signup and the privacy page. */
+.updates-form {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 32rem;
+}
+
+.updates-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
+.updates-form input[type="text"],
+.updates-form input[type="email"] {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+
+.updates-form input:focus {
+  outline: 2px solid color-mix(in srgb, var(--blue) 40%, white);
+  border-color: var(--blue);
+}
+
+.updates-form .btn {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0.55rem;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.updates-form .btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.updates-form [role="status"]:empty {
+  margin: 0;
+}
+
+.privacy h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.85rem, 4.5vw, 2.4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.privacy h2 {
+  margin: 1.75rem 0 0.45rem;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.privacy p,
+.privacy li {
+  color: var(--navy-muted);
+}
+
+.privacy p {
+  margin: 0 0 0.85rem;
+}
+
+.privacy ul {
+  margin: 0.25rem 0 0.85rem;
+  padding-left: 1.2rem;
+}
+
+.privacy li {
+  margin: 0.4rem 0;
+}
+
+.privacy a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

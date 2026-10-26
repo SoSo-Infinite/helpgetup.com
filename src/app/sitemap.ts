@@ -21,5 +21,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
       alternates: { languages: { en: "https://helpgetup.com/albany-food-list" } },
     },
+    {
+      url: "https://helpgetup.com/privacy",
+      lastModified: new Date("2026-10-26"),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
   ];
 }
