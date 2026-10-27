@@ -238,7 +238,7 @@ export const FOOD_PLACES_B: FoodPlace[] = [
       note: "Once a month unless someone is in immediate need. Walk-in.",
       sourceName: MAP,
       sourceUrl: MAP_URL,
-      sourceUpdated: "2026-08-06",
+      sourceUpdated: "2026-10-16",
       slots: [
         { weekdays: [2], start: "10:00", end: "11:00" },
         { weekdays: [3], start: "18:00", end: "19:00" },
