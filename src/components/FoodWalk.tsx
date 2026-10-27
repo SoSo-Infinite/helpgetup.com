@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { LIST_CHECKED_ON, OFFICIAL, type FoodPlace } from "@/data/albany-food";
+import { isListStale, reportChangeHref } from "@/lib/freshness";
 import {
   formatIsoDate,
   formatPhone,
@@ -474,6 +475,9 @@ function Options({
           </span>
         </p>
       ) : null}
+      {LIST_CHECKED_ON && isListStale(LIST_CHECKED_ON) ? (
+        <p className="stale-flag" role="status">{t.staleList(formatIsoDate(LIST_CHECKED_ON, lang))}</p>
+      ) : null}
       {t.sourceInEnglish ? <p className="walk-help fine">{t.sourceInEnglish}</p> : null}
       {result.places.length === 0 ? (
         <p className="walk-help">
@@ -696,6 +700,9 @@ function SourceLine({ place }: { place: FoodPlace }) {
           t.notRechecked
         )}
       </p>
+      <p className="source-line">
+        <a href={reportChangeHref(place.name)}>{t.reportChange}</a>
+      </p>
     </>
   );
 }
@@ -845,6 +852,9 @@ function SeniorCard({ site, when }: { site: SeniorMealSite; when: string }) {
         ) : (
           t.notRechecked
         )}
+      </p>
+      <p className="source-line">
+        <a href={reportChangeHref(site.name)}>{t.reportChange}</a>
       </p>
     </article>
   );

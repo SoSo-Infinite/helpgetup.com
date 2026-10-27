@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FOOD_PLACES, LIST_CHECKED_ON, OFFICIAL, type FoodKind, type FoodPlace } from "@/data/albany-food";
 import { SENIOR_MEAL_SITES, SENIOR_PROGRAM } from "@/data/albany-senior-meals";
 import { formatIsoDate, formatPhone, mapsHref, phoneHref } from "@/lib/food-week";
+import { reportChangeHref } from "@/lib/freshness";
 
 /**
  * The whole Albany County list as plain, server-rendered HTML: one page a person can print or
@@ -34,7 +35,8 @@ export const LIST_TEXT = {
     otherLangCode: "es",
     h1: "Food help in Albany County, NY",
     lede: (n: number) => `${n} places, grouped by type and sorted by town. Hours are copied from each source and change often, so call before you go.`,
-    checked: (d: string) => ` List last checked ${d}.`,
+    checked: (d: string) => ` Hours last checked: ${d}.`,
+    reportChange: "Report a change",
     walkPre: " For what’s open this week near you, ",
     walkLink: "use the food walk",
     asPublished: "",
@@ -83,7 +85,8 @@ export const LIST_TEXT = {
     h1: "Ayuda con comida en el condado de Albany, NY",
     lede: (n: number) =>
       `${n} lugares, agrupados por tipo y ordenados por pueblo. Los horarios se copian de cada fuente y cambian a menudo, así que llame antes de ir.`,
-    checked: (d: string) => ` Lista revisada por última vez el ${d}.`,
+    checked: (d: string) => ` Horarios revisados por última vez: ${d}.`,
+    reportChange: "Reportar un cambio",
     walkPre: " Para ver qué abre esta semana cerca de usted, ",
     walkLink: "use la guía paso a paso",
     asPublished:
@@ -205,6 +208,9 @@ function FoodRow({ p, lang }: { p: FoodPlace; lang: ListLang }) {
         </a>
         {p.sourceUpdated ? t.updated(formatIsoDate(p.sourceUpdated, lang)) : ""}
         {p.verifiedOn ? t.checkedBy(formatIsoDate(p.verifiedOn, lang)) : "."}
+      </p>
+      <p className="fl-src">
+        <a href={reportChangeHref(p.name)}>{t.reportChange}</a>
       </p>
     </li>
   );
@@ -355,6 +361,9 @@ export function FoodList({ lang }: { lang: ListLang }) {
                     </span>
                   ))}
                   {s.verifiedOn ? t.checkedBy(formatIsoDate(s.verifiedOn, lang)) : "."}
+                </p>
+                <p className="fl-src">
+                  <a href={reportChangeHref(s.name)}>{t.reportChange}</a>
                 </p>
               </li>
             ))}

@@ -126,7 +126,7 @@ export default function Home() {
               {FOOD_PLACES.length + SENIOR_MEAL_SITES.length} places in Albany
               County, copied from the Food Pantries for the Capital District’s Food
               Connect map, Capital Roots, and the Albany County Department for Aging
-              {LIST_CHECKED_ON ? <>. Last checked {formatIsoDate(LIST_CHECKED_ON)}.</> : "."}
+              {LIST_CHECKED_ON ? <>. Hours last checked: {formatIsoDate(LIST_CHECKED_ON)}.</> : "."}
             </p>
             <ul className="examples">
               {ON_LIST.map((row) => (
@@ -153,6 +153,21 @@ export default function Home() {
               Albany County.
             </p>
             <UpdatesForm />
+          </div>
+        </section>
+
+        <section className="section" id="partners" aria-labelledby="partners-title">
+          <div className="wrap narrow">
+            <h2 id="partners-title">Run a pantry or meal program?</h2>
+            <p className="sub">
+              Make sure people see your right hours. Tell us when they change, or print the
+              one-page list for your door.
+            </p>
+            <p className="list-link">
+              <a href="mailto:hello@helpgetup.com?subject=Hours%20update">Send an update</a>
+              {" · "}
+              <Link href="/albany-food-list">Print the list</Link>
+            </p>
           </div>
         </section>
       </main>

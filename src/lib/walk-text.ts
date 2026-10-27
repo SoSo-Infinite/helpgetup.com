@@ -84,7 +84,7 @@ export const WALK_TEXT = {
     weekHelp1: (week: string, n: number) =>
       `Week of ${week}. ${n} stops, closest first. Hours can change. If an end time was not published, the card says so. Confirm with the phone number or`,
     weekHelp2: "(Food Pantries referral line).",
-    listChecked: "List last checked against its sources on",
+    listChecked: "Hours last checked:",
     nothingLeft1: "Nothing in this file has a published time left this week for that spot. Use the",
     nothingLeft2: "or call",
     open247: "Open 24/7, per the source",
@@ -125,6 +125,8 @@ export const WALK_TEXT = {
     source: "Source:",
     sourceUpdated: "Source updated",
     lastVerified: "Last verified by HelpGetUp",
+    reportChange: "Report a change",
+    staleList: (date: string) => `Hours may have changed since ${date}. Call before you go.`,
     notRechecked: " Not yet re-checked by HelpGetUp.",
     draftNotice: "",
     unconfirmed:
@@ -234,7 +236,7 @@ export const WALK_TEXT = {
     weekHelp1: (week: string, n: number) =>
       `Semana del ${week}. ${n} lugares, el más cercano primero. Los horarios pueden cambiar. Si no publicaron la hora de cierre, la tarjeta lo dice. Confirme por teléfono o con el`,
     weekHelp2: "(línea de referidos de Food Pantries).",
-    listChecked: "Lista revisada con sus fuentes el",
+    listChecked: "Horarios revisados por última vez:",
     nothingLeft1: "No hay horarios publicados que queden esta semana para ese lugar. Use el",
     nothingLeft2: "o llame al",
     open247: "Abierto 24/7, según la fuente",
@@ -273,6 +275,8 @@ export const WALK_TEXT = {
     source: "Fuente:",
     sourceUpdated: "Fuente actualizada el",
     lastVerified: "Revisado por HelpGetUp el",
+    reportChange: "Reportar un cambio",
+    staleList: (date: string) => `Es posible que los horarios hayan cambiado desde el ${date}. Llame antes de ir.`,
     notRechecked: " HelpGetUp todavía no lo ha vuelto a revisar.",
     unconfirmed:
       "No se pudo confirmar: ninguna fuente pública actual incluye este lugar (solo un folleto anterior). Llame antes de ir.",
