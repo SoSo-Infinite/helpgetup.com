@@ -15,6 +15,10 @@ import { VERIFIED } from "./verified";
  * (scripts/verify-food-sources.mjs): Connect Center and Purple Pantry hours
  * updated, Albany Free School fridge removed (no longer on the map),
  * Redemption Church pantry and two 24/7 fridges added.
+ * Re-checked on 2026-10-27: the map now serves its data from /api/map-data and
+ * /api/entities/{id}; CDCI hours (lunch break 12-12:30) and Produce Pickup Project
+ * hours (10am until food runs out) updated, St. Patrick's Ravena source date bumped.
+ * Unity on the Move Albany (flyer only) not re-confirmed; it keeps its old date.
  * Capital Roots Veggie Mobile stops come from Capital Roots' own 2026 schedule PDF
  * (src/data/albany-food-veggie.ts), not the map, because the map's two Veggie Mobile layers disagree.
  * Rows are copied from those sources. A stop that is not on them is not listed.

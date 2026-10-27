@@ -84,8 +84,59 @@ async function loadLayers(): Promise<Layer[]> {
         },
       );
   const m = html.match(/resource-data="([\s\S]*?)"\s*\n\s*url=/);
-  if (!m) throw new Error("resource-data not found on the map page; the map changed shape");
-  return JSON.parse(decodeEntities(m[1])) as Layer[];
+  if (m) return JSON.parse(decodeEntities(m[1])) as Layer[];
+  // Since Oct 2026 the map page no longer embeds the data. It loads the layers from
+  // data-resource-data-url (/api/map-data, names and addresses only) and each place's
+  // hours, phone and Last_Updated from /api/entities/{id} when it is opened.
+  const u = html.match(/data-resource-data-url="([^"]+)"/);
+  if (!u) throw new Error("resource-data not found on the map page; the map changed shape");
+  const dataUrl = decodeEntities(u[1]);
+  const r = await fetch(dataUrl, { headers: { ...UA.headers, accept: "application/json" } });
+  if (!r.ok) throw new Error(`map data returned ${r.status}`);
+  const layers = (await r.json()) as Layer[];
+  const base = new URL(dataUrl);
+  const ids = [
+    ...new Set(
+      layers.flatMap((l) =>
+        l.features.filter((f) => (f.properties.Counties ?? []).includes("Albany")).map((f) => f.properties.Entity_Id),
+      ),
+    ),
+  ];
+  const detail = new Map<number, Partial<Props>>();
+  const queue = [...ids];
+  await Promise.all(
+    Array.from({ length: 6 }, async () => {
+      for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const d = await fetch(new URL(`/api/entities/${id}`, base), {
+              headers: { ...UA.headers, accept: "application/json" },
+            });
+            if (d.ok) {
+              detail.set(id, (await d.json()) as Partial<Props>);
+              break;
+            }
+          } catch {
+            /* retry */
+          }
+        }
+      }
+    }),
+  );
+  for (const l of layers)
+    for (const f of l.features) {
+      const d = detail.get(f.properties.Entity_Id);
+      f.properties = {
+        Phone: "",
+        Hours_of_Operation: "",
+        Last_Updated: "",
+        ...(f.properties as Partial<Props>),
+        ...(d ?? {}),
+      } as Props;
+    }
+  const missing = ids.filter((id) => !detail.has(id));
+  if (missing.length) console.error(`map entity details missing for ${missing.length} Albany ids: ${missing.join(",")}`);
+  return layers;
 }
 
 const norm = (s: string) =>
