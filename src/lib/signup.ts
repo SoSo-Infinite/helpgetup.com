@@ -1,14 +1,16 @@
 /**
  * Optional "Get updates and help resources" signup.
  * Each signup is stored in Vercel Blob (private, or public at the same unguessable path
- * if private access is rejected), using BLOB_READ_WRITE_TOKEN. The server log line and
- * the existing talk-alert webhook stay. A missing token or a failed write still succeeds
- * for the visitor. Nothing is sold.
+ * if private access is rejected), using BLOB_READ_WRITE_TOKEN. The server log line records
+ * only whether the file was stored and whether the alert was sent: no name and no email.
+ * Step notes under events/ record the event name only. The talk-alert webhook still
+ * receives the name and email when it is configured. A missing token or a failed write
+ * still succeeds for the visitor. Nothing is sold. This route does not send email.
  */
 import { alertsConfigured } from "./talk/alert";
 import { bump as realBump, clientIp } from "./talk/limits";
 import { SIGNUP_COPY } from "./signup-copy";
-import { storeSignup, type SignupPut } from "./signup-store";
+import { storeSignup, storeSignupEvent, type SignupEventName, type SignupPut, type StoreSignupResult } from "./signup-store";
 
 export { SIGNUP_COPY };
 
@@ -66,6 +68,13 @@ function wantsJson(req: Request, contentType: string): boolean {
   return (req.headers.get("accept") || "").includes("application/json");
 }
 
+function successMain(): string {
+  return `<h1 style="font-size:1.6rem">You’re signed up</h1>
+<p><strong>${escapeHtml(SIGNUP_COPY.okLead)}</strong></p>
+<p>${escapeHtml(SIGNUP_COPY.okNext)}</p>
+<p>${escapeHtml(SIGNUP_COPY.okFoodBefore)}<a href="/albany-food-list">${escapeHtml(SIGNUP_COPY.okFoodLabel)}</a>${escapeHtml(SIGNUP_COPY.okFoodAfter)}</p>`;
+}
+
 function reply(req: Request, contentType: string, status: number, message: string, ok: boolean): Response {
   if (wantsJson(req, contentType)) {
     return Response.json(
@@ -74,6 +83,10 @@ function reply(req: Request, contentType: string, status: number, message: strin
     );
   }
   const title = ok ? "You’re signed up" : "Signup";
+  const main = ok
+    ? successMain()
+    : `<h1 style="font-size:1.6rem">${title}</h1>
+<p>${escapeHtml(message)}</p>`;
   const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -83,8 +96,7 @@ function reply(req: Request, contentType: string, status: number, message: strin
 </head>
 <body style="font-family:Segoe UI,system-ui,sans-serif;color:#0b1f3a;line-height:1.5;margin:2rem auto;max-width:36rem;padding:0 1.25rem">
 <main>
-<h1 style="font-size:1.6rem">${title}</h1>
-<p>${escapeHtml(message)}</p>
+${main}
 <p><a href="/#updates">Back to HelpGetUp</a></p>
 <p>Questions: <a href="mailto:hello@helpgetup.com">hello@helpgetup.com</a>. <a href="/privacy">Privacy</a>.</p>
 </main>
@@ -173,15 +185,36 @@ export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise
   const n = await bump(`upd:${ip}`, WINDOW_S);
   if (n > PER_IP) return reply(req, contentType, 429, SIGNUP_COPY.limited, false);
 
-  log(JSON.stringify({ hgu: "signup", name: parsed.name, email: parsed.email }));
+  const blobDeps = { env, putBlob: deps.putBlob, now: deps.now, random: deps.random };
+  // Step notes get their own id (no `random` here), so the filename cannot be joined to the signup file.
+  const steps: Promise<unknown>[] = [safeStep("signup_submitted", blobDeps)];
+
+  let stored: StoreSignupResult = "failed";
   try {
-    await storeSignup(
-      { name: parsed.name, email: parsed.email },
-      { env, putBlob: deps.putBlob, now: deps.now, random: deps.random },
-    );
+    stored = await storeSignup({ name: parsed.name, email: parsed.email }, blobDeps);
   } catch {
-    /* a failed store must not change the success response */
+    stored = "failed";
   }
-  await notifySignup(parsed.name, parsed.email, env, deps.fetchImpl ?? fetch);
+  if (stored === "private" || stored === "public") {
+    steps.push(safeStep("signup_stored", blobDeps));
+  }
+
+  const alert = await notifySignup(parsed.name, parsed.email, env, deps.fetchImpl ?? fetch);
+  if (alert === "sent") steps.push(safeStep("signup_alerted", blobDeps));
+  await Promise.all(steps);
+
+  log(JSON.stringify({ hgu: "signup", stored, alert }));
   return reply(req, contentType, 200, SIGNUP_COPY.ok, true);
+}
+
+/** A step-note failure must not change what the visitor sees. The note gets its own id. */
+function safeStep(
+  event: SignupEventName,
+  deps: { env?: Env; putBlob?: SignupPut; now?: () => number },
+): Promise<unknown> {
+  return storeSignupEvent(event, {
+    env: deps.env,
+    putBlob: deps.putBlob,
+    now: deps.now,
+  }).catch(() => "failed");
 }

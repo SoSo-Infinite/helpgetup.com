@@ -297,6 +297,18 @@ img {
   color: var(--ok);
 }
 
+.form-status .signup-lead {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.form-status a {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .form-status.err {
   background: #fdeceb;
   color: var(--err);

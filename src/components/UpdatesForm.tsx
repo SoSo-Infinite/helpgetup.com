@@ -78,7 +78,16 @@ export default function UpdatesForm() {
         role="status"
         aria-live="polite"
       >
-        {message}
+        {status === "ok" ? (
+          <>
+            <strong className="signup-lead">{SIGNUP_COPY.okLead}</strong>
+            {SIGNUP_COPY.okNext} {SIGNUP_COPY.okFoodBefore}
+            <a href="/albany-food-list">{SIGNUP_COPY.okFoodLabel}</a>
+            {SIGNUP_COPY.okFoodAfter}
+          </>
+        ) : (
+          message
+        )}
       </p>
     </form>
   );

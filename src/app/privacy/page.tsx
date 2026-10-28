@@ -118,11 +118,12 @@ export default function PrivacyPage() {
           </p>
           <p>
             If you leave your name and email to get updates and help resources, we save them as a
-            file with our host, Vercel, and we also keep a line in the site log. When notifications
-            are turned on, we also send that name and email to the person who runs the site,
-            through the same notification used for Rosa summaries. We use them only to send updates
-            and help resources, and we write from hello@helpgetup.com. We do not sell, rent, or
-            trade your email, and we do not give it to advertisers.
+            file with our host, Vercel. The site log does not include your name or email. We also
+            save a short note that a signup step happened, and that note has no name and no email.
+            When notifications are turned on, we send your name and email to the person who runs
+            the site, through the same notification used for Rosa summaries. We use them only to
+            send updates and help resources, and we write from hello@helpgetup.com. We do not sell,
+            rent, or trade your email, and we do not give it to advertisers.
           </p>
           <p>
             To ask us to delete your name and email, write to{" "}
