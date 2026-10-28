@@ -27,5 +27,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     },
+    {
+      url: "https://helpgetup.com/terms",
+      lastModified: new Date("2026-10-28"),
+      changeFrequency: "yearly",
+      priority: 0.3,
+      alternates: { languages: { es: "https://helpgetup.com/terms/es" } },
+    },
+    {
+      url: "https://helpgetup.com/terms/es",
+      lastModified: new Date("2026-10-28"),
+      changeFrequency: "yearly",
+      priority: 0.3,
+      alternates: { languages: { en: "https://helpgetup.com/terms" } },
+    },
   ];
 }
