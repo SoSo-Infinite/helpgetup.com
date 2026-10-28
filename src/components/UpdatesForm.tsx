@@ -22,7 +22,7 @@ export default function UpdatesForm() {
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const dataIn = new FormData(e.currentTarget);
-    const company = String(dataIn.get("company") ?? "");
+    const hgu_leave_blank = String(dataIn.get("hgu_leave_blank") ?? "");
     const elapsed = started.current == null ? undefined : Math.round(performance.now() - started.current);
     setStatus("loading");
     setMessage("");
@@ -30,7 +30,7 @@ export default function UpdatesForm() {
       const res = await fetch("/api/updates", {
         method: "POST",
         headers: { "content-type": "application/json", accept: "application/json" },
-        body: JSON.stringify({ name, email, company, elapsed }),
+        body: JSON.stringify({ name, email, hgu_leave_blank, elapsed }),
         signal: AbortSignal.timeout(SIGNUP_CLIENT_TIMEOUT_MS),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
@@ -52,8 +52,15 @@ export default function UpdatesForm() {
   return (
     <form className="updates-form" action="/api/updates" method="post" onSubmit={onSubmit} aria-describedby="updates-note">
       <div className="updates-hp" aria-hidden="true">
-        <label htmlFor="updates-company">Company</label>
-        <input id="updates-company" name="company" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
+        <label htmlFor="updates-hp">Leave blank</label>
+        <input
+          id="updates-hp"
+          name="hgu_leave_blank"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue=""
+        />
       </div>
       <label htmlFor="updates-name">{copy.labelName}</label>
       <input

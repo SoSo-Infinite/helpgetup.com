@@ -250,17 +250,27 @@ export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise
   }
   if (raw.length > MAX_BODY) return reply(req, contentType, 413, SIGNUP_COPY.large, false);
 
-  let fields: { name?: unknown; email?: unknown; company?: unknown; elapsed?: unknown };
+  let fields: { name?: unknown; email?: unknown; hgu_leave_blank?: unknown; elapsed?: unknown };
   try {
     if (contentType.includes("application/json")) {
-      const body = JSON.parse(raw) as { name?: unknown; email?: unknown; company?: unknown; elapsed?: unknown };
-      fields = { name: body.name, email: body.email, company: body.company, elapsed: body.elapsed };
+      const body = JSON.parse(raw) as {
+        name?: unknown;
+        email?: unknown;
+        hgu_leave_blank?: unknown;
+        elapsed?: unknown;
+      };
+      fields = {
+        name: body.name,
+        email: body.email,
+        hgu_leave_blank: body.hgu_leave_blank,
+        elapsed: body.elapsed,
+      };
     } else {
       const params = new URLSearchParams(raw);
       fields = {
         name: params.get("name") ?? "",
         email: params.get("email") ?? "",
-        company: params.get("company") ?? "",
+        hgu_leave_blank: params.get("hgu_leave_blank") ?? "",
         elapsed: params.get("elapsed") ?? undefined,
       };
     }
@@ -272,7 +282,7 @@ export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise
   if (!parsed.ok) return reply(req, contentType, 400, SIGNUP_COPY.invalid, false);
 
   const ip = clientIp(req);
-  const ipKey = signupIpKey(ip);
+  const ipKey = signupIpKey(ip, env);
   let n = 0;
   try {
     n = await bump(`upd:${ipKey}`, WINDOW_S);
@@ -281,7 +291,7 @@ export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise
   }
   if (n > PER_IP) return reply(req, contentType, 429, SIGNUP_COPY.limited, false);
 
-  const spam = isHoneypot(fields.company) || fastFill(fields.elapsed);
+  const spam = isHoneypot(fields.hgu_leave_blank) || fastFill(fields.elapsed);
   const blobDeps = {
     env,
     putBlob: deps.putBlob,

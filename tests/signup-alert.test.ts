@@ -77,7 +77,11 @@ test("a broken alert counter does not send, and the ip key is not the address", 
     },
   };
   assert.equal(await reserveSignupAlert(down, "ip", h1), "failed");
-  const key = signupIpKey("203.0.113.10");
-  assert.equal(key.includes("203.0.113.10"), false);
-  assert.equal(signupIpKey("203.0.113.10"), key);
+  const plain = signupIpKey("203.0.113.10", {});
+  assert.equal(plain.includes("203.0.113.10"), false);
+  assert.equal(signupIpKey("203.0.113.10", {}), plain);
+  const keyed = signupIpKey("203.0.113.10", { TALK_ALERT_WEBHOOK_KEY: "k" });
+  assert.notEqual(keyed, plain);
+  assert.equal(signupIpKey("203.0.113.10", { TALK_ALERT_WEBHOOK_KEY: "k" }), keyed);
+  assert.equal(keyed.includes("203.0.113.10"), false);
 });

@@ -4,7 +4,7 @@
  * If the counter cannot be written, the alert is skipped.
  * The book stores a hash of the network address, never the address, a name, or an email.
  */
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
 
 type Env = Record<string, string | undefined>;
@@ -31,8 +31,16 @@ export interface CapStore {
 
 export class Precondition extends Error {}
 
-export function signupIpKey(ip: string): string {
-  return createHash("sha256").update(`hgu-signup-ip:${ip}`).digest("hex").slice(0, 24);
+const IP_KEY_ENVS = ["TALK_ALERT_WEBHOOK_KEY", "TALK_REPORT_TOKEN", "BLOB_READ_WRITE_TOKEN"] as const;
+
+/** Keyed hash when a secret is already configured. Otherwise a plain hash. No new env var. */
+export function signupIpKey(ip: string, env: Record<string, string | undefined> = process.env): string {
+  const material = `hgu-signup-ip:${ip}`;
+  const secret = IP_KEY_ENVS.map((name) => env[name]?.trim()).find((value) => value);
+  const digest = secret
+    ? createHmac("sha256", secret).update(material).digest("hex")
+    : createHash("sha256").update(material).digest("hex");
+  return digest.slice(0, 24);
 }
 
 export function claimAlert(book: AlertBook | null, ipHash: string, at: Date): { ok: boolean; book: AlertBook } {

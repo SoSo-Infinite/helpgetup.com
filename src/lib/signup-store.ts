@@ -8,6 +8,7 @@
  * Talk-button counts in /api/t are not contact info (no name, email, or transcript),
  * so they stay as log lines and counters. Rosa summaries already go to the talk webhook.
  */
+if (!process.env.VERCEL_BLOB_RETRIES?.trim()) process.env.VERCEL_BLOB_RETRIES = "1";
 import { put } from "@vercel/blob";
 import { randomBytes } from "node:crypto";
 

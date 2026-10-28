@@ -398,7 +398,9 @@ test("pages: privacy covers the required topics and the footers link to it", () 
   assert.match(form, /copy\.button/);
   assert.match(form, /performance\.now\(\)/);
   assert.match(form, /AbortSignal\.timeout\(SIGNUP_CLIENT_TIMEOUT_MS\)/);
-  assert.match(form, /name="company"/);
+  assert.match(form, /name="hgu_leave_blank"/);
+  assert.match(form, /autoComplete="off"/);
+  assert.doesNotMatch(form, /name="company"|updates-company|>Company</);
   assert.doesNotMatch(form, /Date\.now|startedAt/);
   assert.equal(SIGNUP_CLIENT_TIMEOUT_MS, 15_000);
   assert.match(form, /href="\/albany-food-list"/);
@@ -407,6 +409,8 @@ test("pages: privacy covers the required topics and the footers link to it", () 
   assert.match(privacy, /until you ask us to delete it/);
   assert.match(privacy, /up to 8 signups from one connection in an hour/);
   assert.match(privacy, /short hash of the network address/);
+  assert.match(privacy, /separate private file/);
+  assert.match(privacy, /linger past that hour/);
   assert.doesNotMatch(privacy, /keep a line in the site log/);
   assert.deepEqual(Object.keys(SIGNUP_COPY_EN).sort(), Object.keys(SIGNUP_COPY_ES).sort());
   assert.doesNotMatch(Object.values(SIGNUP_COPY_ES).join("\n"), /\p{Extended_Pictographic}/u);
@@ -439,7 +443,7 @@ test("honeypot and an instant fill go to private spam/ and do not alert", async 
   const trail = collectAfter();
   let webhook = 0;
   const { calls, putBlob } = recordingPut();
-  const honeypot = await handleSignup(post({ name: "Ada", email: "ada@example.com", company: "Acme" }), {
+  const honeypot = await handleSignup(post({ name: "Ada", email: "ada@example.com", hgu_leave_blank: "Acme" }), {
     env: {
       BLOB_READ_WRITE_TOKEN: "blob-token",
       TALK_ALERT_WEBHOOK_URL: "https://hook.example",
