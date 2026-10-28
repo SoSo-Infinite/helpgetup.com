@@ -2,7 +2,7 @@
  * HelpGetUp talk button alerts: after a session ends, POST a short summary (what the caller asked, what
  * the helper said) to Chad's webhook routine. A no-op unless TALK_ALERT_WEBHOOK_URL and
  * TALK_ALERT_WEBHOOK_KEY are both set (this project's own env vars, separate from albanyaiguy.com).
- * No leads are collected on HelpGetUp. Long digit runs (SSN, card or phone numbers a caller might say)
+ * The talk button does not collect a name or email. Updates signups are a separate path. Long digit runs (SSN, card or phone numbers a caller might say)
  * are masked before anything leaves the server. Server-only.
  */
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";

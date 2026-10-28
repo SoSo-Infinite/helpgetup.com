@@ -1,14 +1,37 @@
 /**
  * Optional "Get updates and help resources" signup.
- * Each signup is stored in Vercel Blob (private, or public at the same unguessable path
- * if private access is rejected), using BLOB_READ_WRITE_TOKEN. The server log line and
- * the existing talk-alert webhook stay. A missing token or a failed write still succeeds
- * for the visitor. Nothing is sold.
+ * A private Blob file is the record. The visitor hears "you're on the list" only after
+ * that private write succeeds, or, when this project has no Blob token, after the
+ * alert webhook accepts the signup. Anything else is a 503 that points to hello@.
+ * The server log and the step notes never include the name or email.
+ * This route does not send email.
  */
+import { after as scheduleAfter } from "next/server";
 import { alertsConfigured } from "./talk/alert";
 import { bump as realBump, clientIp } from "./talk/limits";
 import { SIGNUP_COPY } from "./signup-copy";
-import { storeSignup, type SignupPut } from "./signup-store";
+import {
+  blobCapStore,
+  reserveSignupAlert,
+  signupIpKey,
+  type CapStore,
+} from "./signup-alert-cap";
+
+/** Test doubles pass putBlob and no counter. That must not open the real Blob counter. */
+const ALLOW_CAP: CapStore = {
+  async read() {
+    return null;
+  },
+  async write() {},
+};
+import {
+  storeAlertFailure,
+  storeSignup,
+  storeSignupEvent,
+  type SignupEventName,
+  type SignupPut,
+  type StoredJson,
+} from "./signup-store";
 
 export { SIGNUP_COPY };
 
@@ -22,11 +45,22 @@ export type SignupDeps = {
   putBlob?: SignupPut;
   now?: () => number;
   random?: () => string;
+  /** Runs after the response. Tests pass their own. Production uses Next.js `after`. */
+  after?: (fn: () => Promise<void>) => void;
+  /** Alert counter. Tests inject one. Production uses the private Blob counter. */
+  capStore?: CapStore;
 };
 
 const MAX_BODY = 8 * 1024;
 const PER_IP = 8;
 const WINDOW_S = 60 * 60;
+/** Private save budget. Plus the 2s limiter, this stays about 3s under the 15s client abort. */
+const SAVE_TIMEOUT_MS = 7000;
+const ALERT_BUDGET_MS = 8000;
+const ALERT_ATTEMPT_MS = 4000;
+/** A real elapsed time under this is an instant fill and goes to spam/. */
+export const MIN_FILL_MS = 1500;
+const MAX_FILL_MS = 30 * 60 * 1000;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -42,6 +76,27 @@ export function parseSignup(input: { name?: unknown; email?: unknown }): SignupF
   if (/[<>]/.test(name) || /[<>\s]/.test(email)) return { ok: false };
   if (!/\p{L}/u.test(name)) return { ok: false };
   return { ok: true, name, email };
+}
+
+/** A filled honeypot is spam. Missing or blank is a real signup. */
+export function isHoneypot(company: unknown): boolean {
+  return typeof company === "string" && company.trim().length > 0;
+}
+
+/**
+ * True only for a short, finite elapsed time from performance.now().
+ * Missing, non-numeric, negative, or huge values (including a clock timestamp) are real signups.
+ */
+export function fastFill(elapsed: unknown, minMs = MIN_FILL_MS): boolean {
+  const n =
+    typeof elapsed === "number"
+      ? elapsed
+      : typeof elapsed === "string" && elapsed.trim() !== "" && Number.isFinite(Number(elapsed))
+        ? Number(elapsed)
+        : null;
+  if (n === null || !Number.isFinite(n)) return false;
+  if (n < 0 || n > MAX_FILL_MS) return false;
+  return n < minMs;
 }
 
 /** A present Origin must name this host. Same rule as the talk token route. */
@@ -66,6 +121,13 @@ function wantsJson(req: Request, contentType: string): boolean {
   return (req.headers.get("accept") || "").includes("application/json");
 }
 
+function successMain(): string {
+  return `<h1 style="font-size:1.6rem">You’re signed up</h1>
+<p><strong>${escapeHtml(SIGNUP_COPY.okLead)}</strong></p>
+<p>${escapeHtml(SIGNUP_COPY.okNext)}</p>
+<p>${escapeHtml(SIGNUP_COPY.okFoodBefore)}<a href="/albany-food-list">${escapeHtml(SIGNUP_COPY.okFoodLabel)}</a>${escapeHtml(SIGNUP_COPY.okFoodAfter)}</p>`;
+}
+
 function reply(req: Request, contentType: string, status: number, message: string, ok: boolean): Response {
   if (wantsJson(req, contentType)) {
     return Response.json(
@@ -74,6 +136,10 @@ function reply(req: Request, contentType: string, status: number, message: strin
     );
   }
   const title = ok ? "You’re signed up" : "Signup";
+  const main = ok
+    ? successMain()
+    : `<h1 style="font-size:1.6rem">${title}</h1>
+<p>${escapeHtml(message)}</p>`;
   const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -83,8 +149,7 @@ function reply(req: Request, contentType: string, status: number, message: strin
 </head>
 <body style="font-family:Segoe UI,system-ui,sans-serif;color:#0b1f3a;line-height:1.5;margin:2rem auto;max-width:36rem;padding:0 1.25rem">
 <main>
-<h1 style="font-size:1.6rem">${title}</h1>
-<p>${escapeHtml(message)}</p>
+${main}
 <p><a href="/#updates">Back to HelpGetUp</a></p>
 <p>Questions: <a href="mailto:hello@helpgetup.com">hello@helpgetup.com</a>. <a href="/privacy">Privacy</a>.</p>
 </main>
@@ -103,16 +168,19 @@ function escapeHtml(s: string): string {
 }
 
 /**
- * Tell the existing alert webhook, if it is configured. Failure does not undo the log line.
- * Payload is not a talk summary and has no `lead` field.
+ * Tell the existing alert webhook, if it is configured.
+ * The summary names the private file when we have one. It has no `lead` field.
  */
 export async function notifySignup(
   name: string,
   email: string,
   env: Env,
   fetchImpl: typeof fetch,
+  opts: { path?: string; timeoutMs?: number } = {},
 ): Promise<"skipped" | "sent" | "failed"> {
   if (!alertsConfigured(env)) return "skipped";
+  const lines = ["Updates signup", `Name: ${name}`, `Email: ${email}`];
+  if (opts.path) lines.push(`File: ${opts.path}`);
   try {
     const res = await fetchImpl(String(env.TALK_ALERT_WEBHOOK_URL).trim(), {
       method: "POST",
@@ -122,9 +190,9 @@ export async function notifySignup(
       },
       body: JSON.stringify({
         source: "helpgetup.com updates",
-        summary: `Updates signup\nName: ${name}\nEmail: ${email}`,
+        summary: lines.join("\n"),
       }),
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? ALERT_ATTEMPT_MS),
     });
     return res.ok ? "sent" : "failed";
   } catch {
@@ -132,11 +200,40 @@ export async function notifySignup(
   }
 }
 
+/** One try, then one retry, inside a single budget. */
+export async function notifySignupRetry(
+  name: string,
+  email: string,
+  env: Env,
+  fetchImpl: typeof fetch,
+  opts: { path?: string; budgetMs?: number } = {},
+): Promise<"skipped" | "sent" | "failed"> {
+  const budget = opts.budgetMs ?? ALERT_BUDGET_MS;
+  const started = Date.now();
+  let last: "skipped" | "sent" | "failed" = "failed";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const left = budget - (Date.now() - started);
+    if (left < 200) break;
+    last = await notifySignup(name, email, env, fetchImpl, {
+      path: opts.path,
+      timeoutMs: Math.min(ALERT_ATTEMPT_MS, left),
+    });
+    if (last === "sent" || last === "skipped") return last;
+  }
+  return last;
+}
+
 export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise<Response> {
   const env = deps.env ?? process.env;
   const log = deps.log ?? ((line: string) => console.log(line));
   const bump = deps.bump ?? realBump;
   const contentType = (req.headers.get("content-type") || "").toLowerCase();
+  const fetchImpl = deps.fetchImpl ?? fetch;
+  const later =
+    deps.after ??
+    ((fn: () => Promise<void>) => {
+      scheduleAfter(fn);
+    });
 
   if (!sameSite(req)) return reply(req, contentType, 403, SIGNUP_COPY.origin, false);
 
@@ -153,14 +250,29 @@ export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise
   }
   if (raw.length > MAX_BODY) return reply(req, contentType, 413, SIGNUP_COPY.large, false);
 
-  let fields: { name?: unknown; email?: unknown };
+  let fields: { name?: unknown; email?: unknown; hgu_leave_blank?: unknown; elapsed?: unknown };
   try {
     if (contentType.includes("application/json")) {
-      const body = JSON.parse(raw) as { name?: unknown; email?: unknown };
-      fields = { name: body.name, email: body.email };
+      const body = JSON.parse(raw) as {
+        name?: unknown;
+        email?: unknown;
+        hgu_leave_blank?: unknown;
+        elapsed?: unknown;
+      };
+      fields = {
+        name: body.name,
+        email: body.email,
+        hgu_leave_blank: body.hgu_leave_blank,
+        elapsed: body.elapsed,
+      };
     } else {
       const params = new URLSearchParams(raw);
-      fields = { name: params.get("name") ?? "", email: params.get("email") ?? "" };
+      fields = {
+        name: params.get("name") ?? "",
+        email: params.get("email") ?? "",
+        hgu_leave_blank: params.get("hgu_leave_blank") ?? "",
+        elapsed: params.get("elapsed") ?? undefined,
+      };
     }
   } catch {
     return reply(req, contentType, 400, SIGNUP_COPY.invalid, false);
@@ -170,18 +282,120 @@ export async function handleSignup(req: Request, deps: SignupDeps = {}): Promise
   if (!parsed.ok) return reply(req, contentType, 400, SIGNUP_COPY.invalid, false);
 
   const ip = clientIp(req);
-  const n = await bump(`upd:${ip}`, WINDOW_S);
+  const ipKey = signupIpKey(ip, env);
+  let n = 0;
+  try {
+    n = await bump(`upd:${ipKey}`, WINDOW_S);
+  } catch {
+    n = 0;
+  }
   if (n > PER_IP) return reply(req, contentType, 429, SIGNUP_COPY.limited, false);
 
-  log(JSON.stringify({ hgu: "signup", name: parsed.name, email: parsed.email }));
+  const spam = isHoneypot(fields.hgu_leave_blank) || fastFill(fields.elapsed);
+  const blobDeps = {
+    env,
+    putBlob: deps.putBlob,
+    now: deps.now,
+    random: deps.random,
+    timeoutMs: SAVE_TIMEOUT_MS,
+  };
+  let saved: StoredJson = { status: "failed", path: "" };
   try {
-    await storeSignup(
+    saved = await storeSignup(
       { name: parsed.name, email: parsed.email },
-      { env, putBlob: deps.putBlob, now: deps.now, random: deps.random },
+      spam ? { ...blobDeps, folder: "spam" } : blobDeps,
     );
   } catch {
-    /* a failed store must not change the success response */
+    saved = { status: "failed", path: "" };
   }
-  await notifySignup(parsed.name, parsed.email, env, deps.fetchImpl ?? fetch);
-  return reply(req, contentType, 200, SIGNUP_COPY.ok, true);
+
+  if (spam) {
+    log(JSON.stringify({ hgu: "signup", stored: saved.status === "private" ? "spam" : "failed" }));
+    if (saved.status === "private") return reply(req, contentType, 200, SIGNUP_COPY.ok, true);
+    return reply(req, contentType, 503, SIGNUP_COPY.unavailable, false);
+  }
+
+  if (saved.status === "private") {
+    const path = saved.path;
+    log(JSON.stringify({ hgu: "signup", stored: "private" }));
+    later(() =>
+      deliverAlert({
+        env,
+        fetchImpl,
+        log,
+        putBlob: deps.putBlob,
+        now: deps.now,
+        capStore: deps.capStore,
+        ipKey,
+        path,
+        name: parsed.name,
+        email: parsed.email,
+      }),
+    );
+    return reply(req, contentType, 200, SIGNUP_COPY.ok, true);
+  }
+
+  if (saved.status === "skipped") {
+    const alert = await notifySignupRetry(parsed.name, parsed.email, env, fetchImpl);
+    log(JSON.stringify({ hgu: "signup", stored: "skipped", alert }));
+    if (alert === "sent") return reply(req, contentType, 200, SIGNUP_COPY.ok, true);
+    return reply(req, contentType, 503, SIGNUP_COPY.unavailable, false);
+  }
+
+  log(JSON.stringify({ hgu: "signup", stored: "failed" }));
+  return reply(req, contentType, 503, SIGNUP_COPY.unavailable, false);
+}
+
+/**
+ * Cap, then the webhook, after the visitor already has a response.
+ * A counter that cannot be written skips the webhook.
+ * One retry. If it still fails, log the private path and leave an alerts-failed/ marker.
+ */
+async function deliverAlert(opts: {
+  env: Env;
+  fetchImpl: typeof fetch;
+  log: (line: string) => void;
+  putBlob?: SignupPut;
+  now?: () => number;
+  capStore?: CapStore;
+  ipKey: string;
+  path: string;
+  name: string;
+  email: string;
+}): Promise<void> {
+  const note = { env: opts.env, putBlob: opts.putBlob, now: opts.now, timeoutMs: 4000 };
+  const at = new Date(opts.now ? opts.now() : Date.now());
+  try {
+    const cap = opts.capStore ?? (opts.putBlob ? ALLOW_CAP : blobCapStore(opts.env));
+    const reserved = await reserveSignupAlert(cap, opts.ipKey, at);
+    if (reserved !== "ok") {
+      opts.log(JSON.stringify({ hgu: "signup", alert: reserved === "capped" ? "capped" : "failed", path: opts.path }));
+      if (reserved === "failed") await storeAlertFailure(opts.path, note);
+      await safeStep("signup_submitted", note);
+      await safeStep("signup_stored", note);
+      return;
+    }
+    const alert = await notifySignupRetry(opts.name, opts.email, opts.env, opts.fetchImpl, { path: opts.path });
+    if (alert === "sent") {
+      opts.log(JSON.stringify({ hgu: "signup", alert: "sent", path: opts.path }));
+      await safeStep("signup_submitted", note);
+      await safeStep("signup_stored", note);
+      await safeStep("signup_alerted", note);
+      return;
+    }
+    opts.log(JSON.stringify({ hgu: "signup", alert: alert === "skipped" ? "skipped" : "failed", path: opts.path }));
+    if (alert === "failed") await storeAlertFailure(opts.path, note);
+    await safeStep("signup_submitted", note);
+    await safeStep("signup_stored", note);
+  } catch {
+    opts.log(JSON.stringify({ hgu: "signup", alert: "failed", path: opts.path }));
+    await storeAlertFailure(opts.path, note).catch(() => undefined);
+  }
+}
+
+async function safeStep(
+  event: SignupEventName,
+  deps: { env?: Env; putBlob?: SignupPut; now?: () => number; timeoutMs?: number },
+): Promise<void> {
+  await storeSignupEvent(event, deps).catch(() => undefined);
 }

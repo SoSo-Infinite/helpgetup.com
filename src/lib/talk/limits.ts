@@ -43,11 +43,43 @@ function store(): Store {
   }
 }
 
+/** A hung counter must not hold a signup or a talk token open. */
+export const BUMP_TIMEOUT_MS = 2_000;
+
+export function withTimeout<T>(p: Promise<T>, ms = BUMP_TIMEOUT_MS): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("limit timeout")), ms);
+    p.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
+/**
+ * One 2s deadline for the read and the write together.
+ * A timeout or a store error returns 1 so the request is allowed through.
+ */
 export async function bump(key: string, ttlSeconds: number): Promise<number> {
-  const s = store();
-  const n = (await s.get(key)) + 1;
-  await s.set(key, n, ttlSeconds);
-  return n;
+  try {
+    return await withTimeout(
+      (async () => {
+        const s = store();
+        const n = (await s.get(key)) + 1;
+        await s.set(key, n, ttlSeconds);
+        return n;
+      })(),
+      BUMP_TIMEOUT_MS,
+    );
+  } catch {
+    return 1;
+  }
 }
 
 export async function peek(key: string): Promise<number> {
