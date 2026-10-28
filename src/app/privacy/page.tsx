@@ -154,7 +154,8 @@ export default function PrivacyPage() {
             HelpGetUp is not a substitute for emergency services. If you are in immediate danger,
             call 911 (or your local emergency number). <Link href="/">Home</Link>.{" "}
             <Link href="/albany-food-list">Full food list</Link>.{" "}
-            <Link href="/privacy">Privacy</Link>. Contact:{" "}
+            <Link href="/privacy">Privacy</Link>.{" "}
+            <Link href="/terms">Terms</Link>. Contact:{" "}
             <a href="mailto:hello@helpgetup.com">hello@helpgetup.com</a>
           </p>
           <p className="fineprint">© {new Date().getFullYear()} HelpGetUp.</p>

@@ -184,7 +184,8 @@ export default function Home() {
             emergency services. If you are in immediate danger, call 911 (or
             your local emergency number).{" "}
             <Link href="/albany-food-list">Full food list</Link>.{" "}
-            <Link href="/privacy">Privacy</Link>. Contact:{" "}
+            <Link href="/privacy">Privacy</Link>.{" "}
+            <Link href="/terms">Terms</Link>. Contact:{" "}
             <a href="mailto:hello@helpgetup.com">hello@helpgetup.com</a>
           </p>
           <p className="fineprint">

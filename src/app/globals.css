@@ -653,7 +653,8 @@ img {
 #how,
 #examples,
 #updates,
-#privacy {
+#privacy,
+#terms {
   scroll-margin-top: 84px;
 }
 
@@ -1294,38 +1295,46 @@ ul.examples {
   margin: 0;
 }
 
-.privacy h1 {
+.privacy h1,
+.terms h1 {
   margin: 0 0 0.75rem;
   font-size: clamp(1.85rem, 4.5vw, 2.4rem);
   letter-spacing: -0.03em;
   line-height: 1.15;
 }
 
-.privacy h2 {
+.privacy h2,
+.terms h2 {
   margin: 1.75rem 0 0.45rem;
   font-size: 1.25rem;
   letter-spacing: -0.02em;
 }
 
 .privacy p,
-.privacy li {
+.privacy li,
+.terms p,
+.terms li {
   color: var(--navy-muted);
 }
 
-.privacy p {
+.privacy p,
+.terms p {
   margin: 0 0 0.85rem;
 }
 
-.privacy ul {
+.privacy ul,
+.terms ul {
   margin: 0.25rem 0 0.85rem;
   padding-left: 1.2rem;
 }
 
-.privacy li {
+.privacy li,
+.terms li {
   margin: 0.4rem 0;
 }
 
-.privacy a {
+.privacy a,
+.terms a:not(.lang-toggle) {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
