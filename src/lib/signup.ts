@@ -54,8 +54,8 @@ export type SignupDeps = {
 const MAX_BODY = 8 * 1024;
 const PER_IP = 8;
 const WINDOW_S = 60 * 60;
-/** One private save, or the no-Blob alert attempts, stays inside this budget. */
-const SAVE_TIMEOUT_MS = 8000;
+/** Private save budget. Plus the 2s limiter, this stays about 3s under the 15s client abort. */
+const SAVE_TIMEOUT_MS = 7000;
 const ALERT_BUDGET_MS = 8000;
 const ALERT_ATTEMPT_MS = 4000;
 /** A real elapsed time under this is an instant fill and goes to spam/. */

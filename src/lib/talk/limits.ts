@@ -62,11 +62,24 @@ export function withTimeout<T>(p: Promise<T>, ms = BUMP_TIMEOUT_MS): Promise<T> 
   });
 }
 
+/**
+ * One 2s deadline for the read and the write together.
+ * A timeout or a store error returns 1 so the request is allowed through.
+ */
 export async function bump(key: string, ttlSeconds: number): Promise<number> {
-  const s = store();
-  const n = (await withTimeout(s.get(key))) + 1;
-  await withTimeout(s.set(key, n, ttlSeconds));
-  return n;
+  try {
+    return await withTimeout(
+      (async () => {
+        const s = store();
+        const n = (await s.get(key)) + 1;
+        await s.set(key, n, ttlSeconds);
+        return n;
+      })(),
+      BUMP_TIMEOUT_MS,
+    );
+  } catch {
+    return 1;
+  }
 }
 
 export async function peek(key: string): Promise<number> {
