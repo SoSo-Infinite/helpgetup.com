@@ -1260,9 +1260,18 @@ ul.examples {
 
 /* Updates signup and the privacy page. */
 .updates-form {
+  position: relative;
   display: grid;
   gap: 0.45rem;
   max-width: 32rem;
+}
+
+.updates-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 .updates-form label {

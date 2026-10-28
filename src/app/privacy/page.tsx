@@ -118,10 +118,13 @@ export default function PrivacyPage() {
           </p>
           <p>
             If you leave your name and email to get updates and help resources, we save them as a
-            file with our host, Vercel. The site log does not include your name or email. We also
+            private file with our host, Vercel. We keep that file until you ask us to delete it. We
+            do not erase it on a schedule. The site log does not include your name or email. We also
             save a short note that a signup step happened, and that note has no name and no email.
-            When notifications are turned on, we send your name and email to the person who runs
-            the site, through the same notification used for Rosa summaries. We use them only to
+            To limit repeats, we count up to 8 signups from one connection in an hour. That count is
+            a short hash of the network address, not the address itself, and the count expires after
+            one hour. When notifications are turned on, we send your name and email to the person who
+            runs the site, through the same notification used for Rosa summaries. We use them only to
             send updates and help resources, and we write from hello@helpgetup.com. We do not sell,
             rent, or trade your email, and we do not give it to advertisers.
           </p>
