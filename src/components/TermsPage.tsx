@@ -108,9 +108,9 @@ function EnglishBody() {
 
       <h2>Listings</h2>
       <p>
-        Listings are copied from published sources. Each one shows when it was last checked, when we
-        have that date. Hours, addresses, and rules change. Call the place before you go, or check
-        the source named on the listing.
+        Listings are copied from published sources. Each one shows a last-checked date when we have
+        one. Hours, addresses, and rules change. Call the place before you go, or check the source
+        named on the listing.
       </p>
       <p>
         The guide covers food help in Albany County. For food outside this county, call or text 211.
@@ -144,8 +144,8 @@ function EnglishBody() {
       <h2>Acceptable use</h2>
       <p>
         You can report a change to a listing, or leave your name and email to get updates and help
-        resources. Use those for that. Do not send junk, or someone else’s information. We limit how
-        often the updates form can be sent.
+        resources. Use them only for that. Do not send junk or someone else’s information. We limit
+        how often the updates form can be sent.
       </p>
 
       <h2>Contact</h2>
@@ -190,9 +190,9 @@ function SpanishBody() {
 
       <h2>Las listas</h2>
       <p>
-        Las listas se copian de fuentes publicadas. Cada lugar muestra cuándo se revisó por última
-        vez, cuando tenemos esa fecha. Los horarios, las direcciones y las reglas cambian. Llame al
-        lugar antes de ir, o revise la fuente que aparece en la lista.
+        Las listas se copian de fuentes publicadas. Cada lugar muestra la fecha de la última revisión,
+        cuando la tenemos. Los horarios, las direcciones y las reglas cambian. Llame al lugar antes
+        de ir, o revise la fuente que aparece en la lista.
       </p>
       <p>
         La guía cubre ayuda con comida en el condado de Albany. Para comida fuera de este condado,
@@ -230,7 +230,7 @@ function SpanishBody() {
       <h2>Uso aceptable</h2>
       <p>
         Puede reportar un cambio de un lugar, o dejar su nombre y correo electrónico para recibir
-        novedades y recursos de ayuda. Úselos para eso. No envíe basura ni la información de otra
+        novedades y recursos de ayuda. Úselos solo para eso. No envíe basura ni la información de otra
         persona. Limitamos cuántas veces se puede enviar el formulario de novedades.
       </p>
 
